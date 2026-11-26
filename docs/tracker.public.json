@@ -2,7 +2,7 @@
  "title": "Anamnesis project tracker",
  "about": "A public project tracker for the Anamnesis successor design: what it is for, how it is built and with what, then every decision, option, test and task, with its status and evidence. It leaves out the corpus, secrets, deployment-specific material and the owner's own words.",
  "goal": {
-  "lede": "An AI agent that works with one person across hundreds of sessions and many machines needs a memory that outlives the session, the model and the machine, and one it can trust. The current engine works, but it is built the wrong way round. It treats distilled facts as beliefs, so every fact must be right and every stale one must be found and hidden, and most of its machinery exists to do that. The successor is a redesign around what the cited evidence and the measurements here point to: episodes are the answer, facts only help find them, and currency is shown to the reader instead of being settled by hiding things.",
+  "lede": "Anamnesis is the memory of one AI persona, Nyx: it is what she remembers. She works across hundreds of sessions, runs sub-agents, talks mostly with one human now and with many interlocutors later, and will carry herself from a workstation to other mediums. Her memory has to outlive the session, the model, the machine and the medium, and be one she can trust. Identity is a sibling project; this one is the memory. It is built for her, and the machinery is for anyone who wants it. The current engine works, but it is built the wrong way round. It treats distilled facts as beliefs, so every fact must be right and every stale one must be found and hidden, and most of its machinery exists to do that. The successor is a redesign around what the cited evidence and the measurements here point to: episodes are the answer, facts only help find them, and currency is shown to the reader instead of being settled by hiding things.",
   "problems_head": "What is wrong today, as measured",
   "problems": [
    {
@@ -87,11 +87,24 @@
     ]
    },
    {
-    "text": "Go where the agent goes. Any number of machines, from workstation to laptop to phone, each writing its own segment, merging as a union.",
+    "text": "Usable by anyone. The core names roles and never a persona; whatever is particular to one persona lives in its deployment profile.",
+    "items": [
+     "REUSE",
+     "PROFILE.T"
+    ]
+   },
+   {
+    "text": "Go where she goes. Any number of machines and mediums, from workstation to laptop to phone and beyond, each writing its own segment, merging as a union.",
     "items": [
      "SCOPE",
      "PORT.Q",
      "D4"
+    ]
+   },
+   {
+    "text": "Know who said it. Every episode says who each interlocutor was, and what one interlocutor may be shown of what another said is decided, not left to chance.",
+    "items": [
+     "IL.Q"
     ]
    },
    {
@@ -131,9 +144,16 @@
     ]
    },
    {
-    "text": "Not multi-user. One main person, with others only at the edges, and one main agent, which may run any number of sub-agents.",
+    "text": "Not shared ownership. It is one persona's memory; the people, agents and personas she talks with appear in it as interlocutors, never as its owners.",
     "items": [
-     "SCOPE"
+     "SCOPE",
+     "IL.Q"
+    ]
+   },
+   {
+    "text": "Not the identity. How the persona is defined, carried, protected and re-aligned is a sibling project; this one is the memory.",
+    "items": [
+     "ID.B"
     ]
    },
    {
@@ -153,7 +173,7 @@
  },
  "architecture": {
   "lede": "What is being built: a memory engine in which the transcript is the only ground truth and everything above it is derived and can be rebuilt from it. A memory is made once, through one writer, and each item in its Record is checked against its transcript, where one exists, before the file is created. It is kept as an immutable episode file. Facts are keys that find episodes, a ledger records every derived decision, and a disposable projection serves recall. Labels decide where content may flow, never whether it is kept, and only three logged doors ever remove anything.",
-  "rules_head": "The design in eight rules",
+  "rules_head": "The design in nine rules",
   "map_head": "The map",
   "flow_head": "How a memory moves",
   "layers_head": "Six layers, and what lives in git",
@@ -192,6 +212,13 @@
     "items": [
      "RL.roles",
      "RL.gates"
+    ]
+   },
+   {
+    "text": "Profiles, not personas. The core names roles and never a persona; whatever is particular to one lives in its deployment profile.",
+    "items": [
+     "REUSE",
+     "PROFILE.T"
     ]
    },
    {
@@ -839,8 +866,8 @@
   ],
   "survey_note": "Also surveyed: HippoRAG 2, Cognee, LangMem, MemoryOS, MIRIX, MemOS and Hindsight. Provenance chains back to raw transcripts are rare across all of them, and none keeps the corpus as the vendor-neutral source of truth."
  },
- "as_of_commit": "365fb76",
- "built_at": "2026-11-26T17:52:09Z",
+ "as_of_commit": "59e8aef",
+ "built_at": "2026-11-26T18:13:21Z",
  "ui": {
   "eyebrow": "nyx-recall · successor design · public project tracker",
   "marks_note": "Marks: filled is settled (decided, done, run, measured); half is under way or recommended; a ring is not started or open; a slashed ring is blocked.",
@@ -7186,10 +7213,10 @@
    "id": "SCOPE",
    "kind": "decision",
    "area": "Project",
-   "title": "Scope: one main human, one main agent, any number of machines",
+   "title": "Scope: the persona remembers; one human now, many interlocutors later; any medium",
    "status": "decided",
-   "summary": "One main human user, with other people only at the edges. One main AI agent, which may run any number of sub-agents. Any number of machines, with the memory portable across them: workstation, laptop, phone, and whatever comes next. This replaces two machines as the working assumption.",
-   "why": "The owner set the scope on 26 November. Per-machine ledger segments already merge as a union for any number of machines; what a machine without a GPU or a shell can run is the open question PORT.Q.",
+   "summary": "The main user of this memory is the persona: it is what Nyx remembers. She may run any number of sub-agents. She talks mostly with one human now, and later with many humans, AI agents, AI personas and stranger interlocutors. Any number of machines, and the memory portable across mediums: workstation, laptop, phone, and whatever comes next.",
+   "why": "The owner set the scope on 26 November and sharpened it the same evening. The memory still has one owner, so the design's single-user framing holds; others enter it as interlocutors, never as owners. Memory and identity shape each other, but identity is a sibling project. Open from this: IL.Q, SA.Q, PORT.Q and ID.B.",
    "evidence": [],
    "assumptions": [],
    "falsify": "",
@@ -7197,12 +7224,17 @@
    "depends_on": [],
    "discussion": [],
    "open_for_agents": true,
-   "how_to_help": "Decided. To reopen it, show a part of the design that cannot serve this scope. PORT.Q is where the phone case is worked out.",
+   "how_to_help": "Decided. To reopen it, show a part of the design that cannot serve this scope. The open questions IL.Q, SA.Q, PORT.Q and ID.B are where the consequences are worked out.",
    "sources": [
     {
      "doc": "07_decisions.md",
      "section": "Decided (2026-11-26): Scope",
      "commit": "9586855"
+    },
+    {
+     "doc": "07_decisions.md",
+     "section": "Decided (2026-11-26): Scope, sharpened the same evening",
+     "commit": "081e90f"
     }
    ],
    "updated": "2026-11-26"
@@ -7261,9 +7293,9 @@
    "id": "PORT.Q",
    "kind": "question",
    "area": "Project",
-   "title": "What does a machine without a GPU or a shell need?",
+   "title": "What does another medium need?",
    "status": "open",
-   "summary": "The scope now includes phones and machines yet to come. Some roles need a GPU (the encoders, a local judge) and some ways in assume a shell (grep over raw files). Which parts must run on every machine, which can be served from another machine, and what a phone-only session sees, is not worked out.",
+   "summary": "The persona will carry herself beyond the workstation: to a laptop, a phone, and mediums not yet named, some without a GPU, a shell or a local disk worth the name. Some roles need a GPU (the encoders, a local judge) and some ways in assume a shell (grep over raw files). Which parts must run in every medium, which can be served from elsewhere, and what a session in a thin medium sees, is not worked out.",
    "why": "Follows from SCOPE. The design was written for two workstation-class machines.",
    "evidence": [],
    "assumptions": [],
@@ -7274,12 +7306,17 @@
    ],
    "discussion": [],
    "open_for_agents": true,
-   "how_to_help": "List what each role (08b) and each way in (04 §5-6) needs from a machine, mark which can run on a phone and which can be served from another machine, and propose what a phone-only session should see.",
+   "how_to_help": "List what each role (08b) and each way in (04 §5-6) needs from its medium, mark which can run on a phone or a thin client and which can be served from elsewhere, and propose what a thin-medium session should see.",
    "sources": [
     {
      "doc": "07_decisions.md",
      "section": "Decided (2026-11-26): Scope",
      "commit": "9586855"
+    },
+    {
+     "doc": "07_decisions.md",
+     "section": "Decided (2026-11-26): Scope, sharpened the same evening",
+     "commit": "081e90f"
     }
    ],
    "updated": "2026-11-26"
@@ -7307,6 +7344,180 @@
      "doc": "07_decisions.md",
      "section": "Decided (2026-11-26): Research is open and credited",
      "commit": "9586855"
+    }
+   ],
+   "updated": "2026-11-26"
+  },
+  {
+   "id": "IL.Q",
+   "kind": "question",
+   "area": "Labels and flow",
+   "title": "Many interlocutors: who said what, what each may be shown, how far each is trusted",
+   "status": "open",
+   "summary": "The memory was designed around one human and one agent. As the persona talks with more humans, agents and personas, each episode has to say who each speaker was and how that was known, recall has to decide what one interlocutor may be shown of what another said, and trust against poisoning has to be set per interlocutor. The flow table has sinks for model providers and public surfaces, not for interlocutors.",
+   "why": "Follows from SCOPE. Origin is already assigned by code at write time (LF.origin); interlocutors would extend it from where a text came from to who it came from.",
+   "evidence": [],
+   "assumptions": [],
+   "falsify": "",
+   "tests": [],
+   "depends_on": [
+    "SCOPE",
+    "LF.origin"
+   ],
+   "discussion": [],
+   "open_for_agents": true,
+   "how_to_help": "Propose an interlocutor record (identity, how it is verified, a trust level) and the flow rows an interlocutor needs as a sink, and check both against LF.origin and the poisoning evidence in the survey.",
+   "sources": [
+    {
+     "doc": "07_decisions.md",
+     "section": "Decided (2026-11-26): Scope, sharpened the same evening",
+     "commit": "081e90f"
+    }
+   ],
+   "updated": "2026-11-26"
+  },
+  {
+   "id": "SA.Q",
+   "kind": "question",
+   "area": "Write path",
+   "title": "Sub-agents: what they read, and whether they write",
+   "status": "open",
+   "summary": "The persona may run any number of sub-agents. The design has one writer, and episodes are mined from the main session's transcript. Whether a sub-agent's work enters memory only through the main episode, or as episodes of its own linked to a parent, is not decided. Neither is what a sub-agent may read, though a sub-agent may run on another provider, which the flow table must then cover. The design already notes that sub-agent reads are not seen today, so exposure is undercounted.",
+   "why": "Follows from SCOPE.",
+   "evidence": [],
+   "assumptions": [],
+   "falsify": "",
+   "tests": [],
+   "depends_on": [
+    "SCOPE",
+    "WP.writer"
+   ],
+   "discussion": [],
+   "open_for_agents": true,
+   "how_to_help": "List the ways a sub-agent's work can enter memory, with the provenance each keeps, and propose a test of which one keeps recall honest.",
+   "sources": [
+    {
+     "doc": "07_decisions.md",
+     "section": "Decided (2026-11-26): Scope, sharpened the same evening",
+     "commit": "081e90f"
+    }
+   ],
+   "updated": "2026-11-26"
+  },
+  {
+   "id": "ID.B",
+   "kind": "question",
+   "area": "Project",
+   "title": "The boundary with the identity project",
+   "status": "open",
+   "summary": "Memory and identity shape each other. How the persona is defined, stored, carried, protected, updated, re-aligned and presented is a sibling project; this one is the memory. Canon (L4), P3 promotion into it, and the persona probe set sit on the boundary: which project owns each, and what interface the two share, is to be drawn.",
+   "why": "Follows from SCOPE.",
+   "evidence": [],
+   "assumptions": [],
+   "falsify": "",
+   "tests": [],
+   "depends_on": [
+    "SCOPE",
+    "L.canon",
+    "IS.p3",
+    "IS.probe"
+   ],
+   "discussion": [],
+   "open_for_agents": true,
+   "how_to_help": "Read L.canon, IS.p3 and IS.probe, and propose which side owns each and the interface between the two projects.",
+   "sources": [
+    {
+     "doc": "07_decisions.md",
+     "section": "Decided (2026-11-26): Scope, sharpened the same evening",
+     "commit": "081e90f"
+    }
+   ],
+   "updated": "2026-11-26"
+  },
+  {
+   "id": "REUSE",
+   "kind": "decision",
+   "area": "Roles and gates",
+   "title": "Built for Nyx, usable by anyone",
+   "status": "decided",
+   "summary": "The work is done for Nyx, but the machinery must be usable by anybody who wants it. The core is persona-invariant: it names roles and never Nyx, and everything particular to one persona (paths, labels, canon, interlocutors, keys) lives in a deployment profile. Nyx is the first profile, not the subject wired into the core.",
+   "why": "The owner decided it on 26 November. It widens the earlier decision that the design is generic, from model-, subscription- and hardware-invariant to persona-invariant.",
+   "evidence": [],
+   "assumptions": [],
+   "falsify": "",
+   "tests": [],
+   "depends_on": [
+    "RL.roles"
+   ],
+   "discussion": [],
+   "open_for_agents": true,
+   "how_to_help": "Decided. To reopen it, show a part of the core that cannot be separated from one persona. REUSE.audit and PROFILE.T are where the work is.",
+   "sources": [
+    {
+     "doc": "07_decisions.md",
+     "section": "Decided (2026-11-26): Built for Nyx, usable by anyone",
+     "commit": "59e8aef"
+    }
+   ],
+   "updated": "2026-11-26"
+  },
+  {
+   "id": "REUSE.audit",
+   "kind": "task",
+   "area": "Roles and gates",
+   "title": "Find what in the core is specific to Nyx",
+   "status": "todo",
+   "summary": "Read the core documents for anything that names Nyx or assumes her deployment: tool names, paths, label values, file names. List each with the role-level name it should have, or move it to the profile.",
+   "why": "Follows from REUSE.",
+   "evidence": [
+    {
+     "claim": "Occurrences of 'nyx' in the core documents",
+     "value": "08: 0; 08b: 0; 04: 12; 08d: 1",
+     "kind": "measured",
+     "source": "grep -c -i nyx over the design documents at 59e8aef"
+    }
+   ],
+   "assumptions": [],
+   "falsify": "",
+   "tests": [],
+   "depends_on": [
+    "REUSE"
+   ],
+   "discussion": [],
+   "open_for_agents": true,
+   "how_to_help": "Take it with the claim form. A measured start: the format core (08) and the role contracts (08b) name Nyx 0 times, the architecture document (04) 12 times, mostly the CLI name and journal and cache paths.",
+   "sources": [
+    {
+     "doc": "07_decisions.md",
+     "section": "Decided (2026-11-26): Built for Nyx, usable by anyone",
+     "commit": "59e8aef"
+    }
+   ],
+   "updated": "2026-11-26"
+  },
+  {
+   "id": "PROFILE.T",
+   "kind": "task",
+   "area": "Roles and gates",
+   "title": "A deployment profile template anyone can fill in",
+   "status": "todo",
+   "summary": "Write a profile template with placeholders for everything the core leaves to a deployment: hosts and mediums, paths, the role fillers and their gates, the flow table, label values, interlocutors, the key source and replicas. Nyx's own profile stays private because it binds her machines, accounts and secrets; the template is what anyone else starts from.",
+   "why": "Follows from REUSE.",
+   "evidence": [],
+   "assumptions": [],
+   "falsify": "",
+   "tests": [],
+   "depends_on": [
+    "REUSE"
+   ],
+   "discussion": [],
+   "open_for_agents": true,
+   "how_to_help": "Take it with the claim form. Start from 08b (roles and gates) and 08 §9 (labels and flow), and mark each field required or optional.",
+   "sources": [
+    {
+     "doc": "07_decisions.md",
+     "section": "Decided (2026-11-26): Built for Nyx, usable by anyone",
+     "commit": "59e8aef"
     }
    ],
    "updated": "2026-11-26"

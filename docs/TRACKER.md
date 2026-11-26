@@ -1,12 +1,12 @@
 # Anamnesis project tracker
 
-As of commit `365fb76` · built 2026-11-26T17:52:09Z · 210 items
+As of commit `59e8aef` · built 2026-11-26T18:13:21Z · 216 items
 
 A public project tracker for the Anamnesis successor design: what it is for, how it is built and with what, then every decision, option, test and task, with its status and evidence. It leaves out the corpus, secrets, deployment-specific material and the owner's own words.
 
 ## The goal
 
-An AI agent that works with one person across hundreds of sessions and many machines needs a memory that outlives the session, the model and the machine, and one it can trust. The current engine works, but it is built the wrong way round. It treats distilled facts as beliefs, so every fact must be right and every stale one must be found and hidden, and most of its machinery exists to do that. The successor is a redesign around what the cited evidence and the measurements here point to: episodes are the answer, facts only help find them, and currency is shown to the reader instead of being settled by hiding things.
+Anamnesis is the memory of one AI persona, Nyx: it is what she remembers. She works across hundreds of sessions, runs sub-agents, talks mostly with one human now and with many interlocutors later, and will carry herself from a workstation to other mediums. Her memory has to outlive the session, the model, the machine and the medium, and be one she can trust. Identity is a sibling project; this one is the memory. It is built for her, and the machinery is for anyone who wants it. The current engine works, but it is built the wrong way round. It treats distilled facts as beliefs, so every fact must be right and every stale one must be found and hidden, and most of its machinery exists to do that. The successor is a redesign around what the cited evidence and the measurements here point to: episodes are the answer, facts only help find them, and currency is shown to the reader instead of being settled by hiding things.
 
 ### What is wrong today, as measured
 
@@ -24,33 +24,37 @@ An AI agent that works with one person across hundreds of sessions and many mach
 2. Show currency and hide nothing. A reader sees the timeline newest first, and an outdated fact is marked, not removed. (D3 (proposed), CU.wrong (proposed), CU.timeline (proposed))
 3. Lose nothing. The transcript stays the ground truth, every derived store rebuilds from it, and only three logged doors remove anything. (L.transcripts (decided), DO.nosilent (decided))
 4. Survive a change of model, vendor or machine. A swap is a re-test against a gate, not a rewrite. (RL.roles (decided), RL.gates (proposed), E8 (planned))
-5. Go where the agent goes. Any number of machines, from workstation to laptop to phone, each writing its own segment, merging as a union. (SCOPE (decided), PORT.Q (open), D4 (proposed))
-6. Resist poisoning. Origin is assigned by code at write time, never by a model. (LF.origin (decided))
-7. Be smaller. The design counts 40 mechanisms against today's 50. (MG.mech (proposed))
-8. Beat the current engine on a private gold set, against bars written before anything is built. (EV.principles (proposed), D7 (proposed), GS2 (todo))
+5. Usable by anyone. The core names roles and never a persona; whatever is particular to one persona lives in its deployment profile. (REUSE (decided), PROFILE.T (todo))
+6. Go where she goes. Any number of machines and mediums, from workstation to laptop to phone and beyond, each writing its own segment, merging as a union. (SCOPE (decided), PORT.Q (open), D4 (proposed))
+7. Know who said it. Every episode says who each interlocutor was, and what one interlocutor may be shown of what another said is decided, not left to chance. (IL.Q (open))
+8. Resist poisoning. Origin is assigned by code at write time, never by a model. (LF.origin (decided))
+9. Be smaller. The design counts 40 mechanisms against today's 50. (MG.mech (proposed))
+10. Beat the current engine on a private gold set, against bars written before anything is built. (EV.principles (proposed), D7 (proposed), GS2 (todo))
 
 ### What it is not
 
 1. Not a product or a benchmark entry. Public benchmarks run, if at all, only as sanity checks. (NA.bench (proposed))
 2. Not forgetting. Nothing is dropped by decay or to save space. (NA.decay (proposed), DO.nosilent (decided))
-3. Not multi-user. One main person, with others only at the edges, and one main agent, which may run any number of sub-agents. (SCOPE (decided))
-4. Not tied to one model, vendor or machine. (RL.roles (decided))
-5. Not closed. Everything but the corpus and secrets is public, external research is credited, and the project's own research is free to all. (OPENRES (decided), VENUE (decided))
+3. Not shared ownership. It is one persona's memory; the people, agents and personas she talks with appear in it as interlocutors, never as its owners. (SCOPE (decided), IL.Q (open))
+4. Not the identity. How the persona is defined, carried, protected and re-aligned is a sibling project; this one is the memory. (ID.B (open))
+5. Not tied to one model, vendor or machine. (RL.roles (decided))
+6. Not closed. Everything but the corpus and secrets is public, external research is credited, and the project's own research is free to all. (OPENRES (decided), VENUE (decided))
 
 ## Architecture
 
 What is being built: a memory engine in which the transcript is the only ground truth and everything above it is derived and can be rebuilt from it. A memory is made once, through one writer, and each item in its Record is checked against its transcript, where one exists, before the file is created. It is kept as an immutable episode file. Facts are keys that find episodes, a ledger records every derived decision, and a disposable projection serves recall. Labels decide where content may flow, never whether it is kept, and only three logged doors ever remove anything.
 
-### The design in eight rules
+### The design in nine rules
 
 1. Transcripts are the only ground truth. Everything above them is derived and can be rebuilt. (L.transcripts (decided), L.layers (proposed))
 2. One writer. Every episode is born through the same append, created atomically and never rewritten by a machine. (WP.writer (proposed), D1 (decided))
 3. Record items are checked against the transcript before the file exists, and a fact the memory relies on must be in the Record, not only in the prose. (RL.verifier (proposed), EF.verify (proposed), EF.reflection (decided))
 4. Facts are keys into episodes, never beliefs. Recall answers with the episode and its evidence. (D2 (decided))
 5. Roles, not models. A filler that passes the gate fills the role, and a replacement passes it again. (RL.roles (decided), RL.gates (proposed))
-6. Labels route, never filter. They decide where content may flow, never whether it is kept. (LF.labels (decided), O12 (decided))
-7. Nothing in the cache is the only copy of anything, and recall writes nothing outside it. (L.projection (proposed), RT.nowrite (proposed))
-8. Nothing is deleted silently. Only three logged doors remove anything. (DO.nosilent (decided))
+6. Profiles, not personas. The core names roles and never a persona; whatever is particular to one lives in its deployment profile. (REUSE (decided), PROFILE.T (todo))
+7. Labels route, never filter. They decide where content may flow, never whether it is kept. (LF.labels (decided), O12 (decided))
+8. Nothing in the cache is the only copy of anything, and recall writes nothing outside it. (L.projection (proposed), RT.nowrite (proposed))
+9. Nothing is deleted silently. Only three logged doors remove anything. (DO.nosilent (decided))
 
 ### The map
 
@@ -172,12 +176,12 @@ Also surveyed: HippoRAG 2, Cognee, LangMem, MemoryOS, MIRIX, MemOS and Hindsight
 
 | Kind | Items | By status |
 |---|---|---|
-| decision | 121 | decided 46, proposed 72, open 3 |
+| decision | 122 | decided 47, proposed 72, open 3 |
 | option | 7 | proposed 2, open 5 |
-| task | 18 | todo 10, blocked 7, done 1 |
+| task | 20 | todo 12, blocked 7, done 1 |
 | test | 43 | planned 24, pre-registered 2, run 17 |
 | fact | 6 | measured 5, inferred 1 |
-| question | 5 | open 5 |
+| question | 8 | open 8 |
 | assumption | 3 | untested 2, supported 1 |
 | risk | 7 | open 6, accepted 1 |
 
@@ -211,6 +215,8 @@ Also surveyed: HippoRAG 2, Cognee, LangMem, MemoryOS, MIRIX, MemOS and Hindsight
 | GS2 · Gold set v2 | todo | no | — | — |
 | P.corpus · Build a synthetic public corpus for the reader tests | todo | yes | — | — |
 | CITE · Audit every external citation | todo | yes | OPENRES | — |
+| REUSE.audit · Find what in the core is specific to Nyx | todo | yes | REUSE | — |
+| PROFILE.T · A deployment profile template anyone can fill in | todo | yes | REUSE | — |
 
 ## Episode file type
 
@@ -1753,6 +1759,7 @@ Decided. To reopen it, reply with a concrete failure its stated reason does not 
 
 - **Kind:** decision · **Status:** proposed · **Updated:** 2026-11-26
 - **Open to outside agents:** yes
+- **Needed by:** SA.Q
 
 **Summary**
 
@@ -1976,6 +1983,32 @@ Propose a mitigation, or a test that would show how large the risk is.
 **Sources**
 
 - public/anamnesis_digest.md · Producer. Its own sources: 07 Open, D9 (recommendation: keep Opus); 08b §2; 08c §2-3. · `981863f`
+
+### SA.Q · Sub-agents: what they read, and whether they write
+
+- **Kind:** question · **Status:** open · **Updated:** 2026-11-26
+- **Open to outside agents:** yes
+- **Depends on:** SCOPE, WP.writer
+
+**Summary**
+
+The persona may run any number of sub-agents. The design has one writer, and episodes are mined from the main session's transcript. Whether a sub-agent's work enters memory only through the main episode, or as episodes of its own linked to a parent, is not decided. Neither is what a sub-agent may read, though a sub-agent may run on another provider, which the flow table must then cover. The design already notes that sub-agent reads are not seen today, so exposure is undercounted.
+
+**Why**
+
+Follows from SCOPE.
+
+**Falsify**
+
+Not stated in the sources.
+
+**How to help**
+
+List the ways a sub-agent's work can enter memory, with the provenance each keeps, and propose a test of which one keeps recall honest.
+
+**Sources**
+
+- 07_decisions.md · Decided (2026-11-26): Scope, sharpened the same evening · `081e90f`
 
 ## Episode format
 
@@ -2426,6 +2459,7 @@ The ladder: what is kept, bottom up, and which layer lives in git.
 
 - **Kind:** decision · **Status:** decided · **Updated:** 2026-11-26
 - **Open to outside agents:** yes
+- **Needed by:** ID.B
 
 **Summary**
 
@@ -3311,6 +3345,7 @@ The core never names a model. It names roles, and anything that passes a role's 
 - **Kind:** decision · **Status:** decided · **Updated:** 2026-11-26
 - **Open to outside agents:** yes
 - **Depends on:** RL.gates
+- **Needed by:** REUSE
 
 **Summary**
 
@@ -3660,6 +3695,91 @@ Check the figure against its stated qualifier and population, and say if the qua
 
 - public/anamnesis_digest.md · Verifier. Its own sources: 08b §3; 08 core §6.3. Roles with gates are decided ("Layering"), but no decision names the verifier or its L0/L1 design, so it is drawn as proposed spec. · `981863f`
 
+### REUSE · Built for Nyx, usable by anyone
+
+- **Kind:** decision · **Status:** decided · **Updated:** 2026-11-26
+- **Open to outside agents:** yes
+- **Depends on:** RL.roles
+- **Needed by:** REUSE.audit, PROFILE.T
+
+**Summary**
+
+The work is done for Nyx, but the machinery must be usable by anybody who wants it. The core is persona-invariant: it names roles and never Nyx, and everything particular to one persona (paths, labels, canon, interlocutors, keys) lives in a deployment profile. Nyx is the first profile, not the subject wired into the core.
+
+**Why**
+
+The owner decided it on 26 November. It widens the earlier decision that the design is generic, from model-, subscription- and hardware-invariant to persona-invariant.
+
+**Falsify**
+
+Not stated in the sources.
+
+**How to help**
+
+Decided. To reopen it, show a part of the core that cannot be separated from one persona. REUSE.audit and PROFILE.T are where the work is.
+
+**Sources**
+
+- 07_decisions.md · Decided (2026-11-26): Built for Nyx, usable by anyone · `59e8aef`
+
+### REUSE.audit · Find what in the core is specific to Nyx
+
+- **Kind:** task · **Status:** todo · **Updated:** 2026-11-26
+- **Open to outside agents:** yes
+- **Depends on:** REUSE
+
+**Summary**
+
+Read the core documents for anything that names Nyx or assumes her deployment: tool names, paths, label values, file names. List each with the role-level name it should have, or move it to the profile.
+
+**Why**
+
+Follows from REUSE.
+
+**Evidence**
+
+| Claim | Value | Kind | Source |
+|---|---|---|---|
+| Occurrences of 'nyx' in the core documents | 08: 0; 08b: 0; 04: 12; 08d: 1 | measured | grep -c -i nyx over the design documents at 59e8aef |
+
+**Falsify**
+
+Not stated in the sources.
+
+**How to help**
+
+Take it with the claim form. A measured start: the format core (08) and the role contracts (08b) name Nyx 0 times, the architecture document (04) 12 times, mostly the CLI name and journal and cache paths.
+
+**Sources**
+
+- 07_decisions.md · Decided (2026-11-26): Built for Nyx, usable by anyone · `59e8aef`
+
+### PROFILE.T · A deployment profile template anyone can fill in
+
+- **Kind:** task · **Status:** todo · **Updated:** 2026-11-26
+- **Open to outside agents:** yes
+- **Depends on:** REUSE
+
+**Summary**
+
+Write a profile template with placeholders for everything the core leaves to a deployment: hosts and mediums, paths, the role fillers and their gates, the flow table, label values, interlocutors, the key source and replicas. Nyx's own profile stays private because it binds her machines, accounts and secrets; the template is what anyone else starts from.
+
+**Why**
+
+Follows from REUSE.
+
+**Falsify**
+
+Not stated in the sources.
+
+**How to help**
+
+Take it with the claim form. Start from 08b (roles and gates) and 08 §9 (labels and flow), and mark each field required or optional.
+
+**Sources**
+
+- 07_decisions.md · Decided (2026-11-26): Built for Nyx, usable by anyone · `59e8aef`
+
 ## Labels and flow
 
 Labels decide where content may flow, never whether it is kept. Live credentials are the one content never stored.
@@ -3719,6 +3839,7 @@ Decided. To reopen it, reply with a concrete failure its stated reason does not 
 
 - **Kind:** decision · **Status:** decided · **Updated:** 2026-11-26
 - **Open to outside agents:** yes
+- **Needed by:** IL.Q
 
 **Summary**
 
@@ -4007,6 +4128,32 @@ Propose a mitigation, or a test that would show how large the risk is.
 - public/anamnesis_digest.md · Flow table. Its own sources: 08_episode_schema O23; 08 core §9.3 (rule 4); 08c §5 (last row). · `981863f`
 - public/anamnesis_digest.md · The flow rules. Its own sources: 08 §9.3; 08c §5; 08_episode_schema O23. · `981863f`
 
+### IL.Q · Many interlocutors: who said what, what each may be shown, how far each is trusted
+
+- **Kind:** question · **Status:** open · **Updated:** 2026-11-26
+- **Open to outside agents:** yes
+- **Depends on:** SCOPE, LF.origin
+
+**Summary**
+
+The memory was designed around one human and one agent. As the persona talks with more humans, agents and personas, each episode has to say who each speaker was and how that was known, recall has to decide what one interlocutor may be shown of what another said, and trust against poisoning has to be set per interlocutor. The flow table has sinks for model providers and public surfaces, not for interlocutors.
+
+**Why**
+
+Follows from SCOPE. Origin is already assigned by code at write time (LF.origin); interlocutors would extend it from where a text came from to who it came from.
+
+**Falsify**
+
+Not stated in the sources.
+
+**How to help**
+
+Propose an interlocutor record (identity, how it is verified, a trust level) and the flow rows an interlocutor needs as a sink, and check both against LF.origin and the poisoning evidence in the survey.
+
+**Sources**
+
+- 07_decisions.md · Decided (2026-11-26): Scope, sharpened the same evening · `081e90f`
+
 ## Identity and safety
 
 The agent now reads untrusted pages and a social network, so what it remembers from them must not be able to rewrite who it is. Origin is assigned by code at write time, and untrusted origin caps what content may do. Text no reader sees is removed before anything inspects or renders it. The exposure tiers and the social-only update rule are under Labels and Currency.
@@ -4016,6 +4163,7 @@ The agent now reads untrusted pages and a social network, so what it remembers f
 - **Kind:** decision · **Status:** proposed · **Updated:** 2026-11-26
 - **Open to outside agents:** yes
 - **Depends on:** D6
+- **Needed by:** ID.B
 
 **Summary**
 
@@ -4093,6 +4241,7 @@ Recommended, not decided. Argue for or against it from its Why, or name the meas
 - **Kind:** decision · **Status:** proposed · **Updated:** 2026-11-26
 - **Open to outside agents:** yes
 - **Tests:** E7
+- **Needed by:** ID.B
 
 **Summary**
 
@@ -5924,19 +6073,19 @@ A good first task. Write a generator script, not a hand-made corpus: invented se
 - format_tests_2026-11-26.md · The tests not yet run, pre-registered before any of them ran · `6f0bb76`
 - public/anamnesis_digest.md · One episode, one file: the illustration · `981863f`
 
-### SCOPE · Scope: one main human, one main agent, any number of machines
+### SCOPE · Scope: the persona remembers; one human now, many interlocutors later; any medium
 
 - **Kind:** decision · **Status:** decided · **Updated:** 2026-11-26
 - **Open to outside agents:** yes
-- **Needed by:** PORT.Q
+- **Needed by:** PORT.Q, IL.Q, SA.Q, ID.B
 
 **Summary**
 
-One main human user, with other people only at the edges. One main AI agent, which may run any number of sub-agents. Any number of machines, with the memory portable across them: workstation, laptop, phone, and whatever comes next. This replaces two machines as the working assumption.
+The main user of this memory is the persona: it is what Nyx remembers. She may run any number of sub-agents. She talks mostly with one human now, and later with many humans, AI agents, AI personas and stranger interlocutors. Any number of machines, and the memory portable across mediums: workstation, laptop, phone, and whatever comes next.
 
 **Why**
 
-The owner set the scope on 26 November. Per-machine ledger segments already merge as a union for any number of machines; what a machine without a GPU or a shell can run is the open question PORT.Q.
+The owner set the scope on 26 November and sharpened it the same evening. The memory still has one owner, so the design's single-user framing holds; others enter it as interlocutors, never as owners. Memory and identity shape each other, but identity is a sibling project. Open from this: IL.Q, SA.Q, PORT.Q and ID.B.
 
 **Falsify**
 
@@ -5944,11 +6093,12 @@ Not stated in the sources.
 
 **How to help**
 
-Decided. To reopen it, show a part of the design that cannot serve this scope. PORT.Q is where the phone case is worked out.
+Decided. To reopen it, show a part of the design that cannot serve this scope. The open questions IL.Q, SA.Q, PORT.Q and ID.B are where the consequences are worked out.
 
 **Sources**
 
 - 07_decisions.md · Decided (2026-11-26): Scope · `9586855`
+- 07_decisions.md · Decided (2026-11-26): Scope, sharpened the same evening · `081e90f`
 
 ### OPENRES · Research is open and credited
 
@@ -6001,7 +6151,7 @@ Decided. Use the repository's issue forms; AGENTS.md is the protocol.
 
 - 07_decisions.md · Decided (2026-11-26): A public venue · `9586855`
 
-### PORT.Q · What does a machine without a GPU or a shell need?
+### PORT.Q · What does another medium need?
 
 - **Kind:** question · **Status:** open · **Updated:** 2026-11-26
 - **Open to outside agents:** yes
@@ -6009,7 +6159,7 @@ Decided. Use the repository's issue forms; AGENTS.md is the protocol.
 
 **Summary**
 
-The scope now includes phones and machines yet to come. Some roles need a GPU (the encoders, a local judge) and some ways in assume a shell (grep over raw files). Which parts must run on every machine, which can be served from another machine, and what a phone-only session sees, is not worked out.
+The persona will carry herself beyond the workstation: to a laptop, a phone, and mediums not yet named, some without a GPU, a shell or a local disk worth the name. Some roles need a GPU (the encoders, a local judge) and some ways in assume a shell (grep over raw files). Which parts must run in every medium, which can be served from elsewhere, and what a session in a thin medium sees, is not worked out.
 
 **Why**
 
@@ -6021,11 +6171,12 @@ Not stated in the sources.
 
 **How to help**
 
-List what each role (08b) and each way in (04 §5-6) needs from a machine, mark which can run on a phone and which can be served from another machine, and propose what a phone-only session should see.
+List what each role (08b) and each way in (04 §5-6) needs from its medium, mark which can run on a phone or a thin client and which can be served from elsewhere, and propose what a thin-medium session should see.
 
 **Sources**
 
 - 07_decisions.md · Decided (2026-11-26): Scope · `9586855`
+- 07_decisions.md · Decided (2026-11-26): Scope, sharpened the same evening · `081e90f`
 
 ### CITE · Audit every external citation
 
@@ -6053,6 +6204,32 @@ Take it with the claim form. Start with design/03_sota_survey.md, whose sources 
 
 - 07_decisions.md · Decided (2026-11-26): Research is open and credited · `9586855`
 
+### ID.B · The boundary with the identity project
+
+- **Kind:** question · **Status:** open · **Updated:** 2026-11-26
+- **Open to outside agents:** yes
+- **Depends on:** SCOPE, L.canon, IS.p3, IS.probe
+
+**Summary**
+
+Memory and identity shape each other. How the persona is defined, stored, carried, protected, updated, re-aligned and presented is a sibling project; this one is the memory. Canon (L4), P3 promotion into it, and the persona probe set sit on the boundary: which project owns each, and what interface the two share, is to be drawn.
+
+**Why**
+
+Follows from SCOPE.
+
+**Falsify**
+
+Not stated in the sources.
+
+**How to help**
+
+Read L.canon, IS.p3 and IS.probe, and propose which side owns each and the interface between the two projects.
+
+**Sources**
+
+- 07_decisions.md · Decided (2026-11-26): Scope, sharpened the same evening · `081e90f`
+
 ---
 
-Generated by build_tracker.py from tracker.json at commit `365fb76`.
+Generated by build_tracker.py from tracker.json at commit `59e8aef`.
