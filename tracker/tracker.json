@@ -885,8 +885,8 @@
   ],
   "survey_note": "Also surveyed: HippoRAG 2, Cognee, LangMem, MemoryOS, MIRIX, MemOS and Hindsight; and, for the persona's harness in September 2026, ten memory providers, seven of which hand the model a delete verb. Provenance chains back to raw transcripts are rare across all of them, and none keeps the corpus as the vendor-neutral source of truth."
  },
- "as_of_commit": "60230fa",
- "built_at": "2026-11-26T19:27:24Z",
+ "as_of_commit": "bdaa96a",
+ "built_at": "2026-11-26T19:33:55Z",
  "ui": {
   "eyebrow": "nyx-recall · successor design · public project tracker",
   "marks_note": "Marks: filled is settled (decided, done, run, measured); half is under way or recommended; a ring is not started or open; a slashed ring is blocked.",
@@ -7658,6 +7658,32 @@
      "doc": "03_sota_survey.md",
      "section": "8. Memory providers and harnesses (folded in 2026-11-26, from the nyx-vessel research)",
      "commit": "cfc7481"
+    }
+   ],
+   "updated": "2026-11-26"
+  },
+  {
+   "id": "SRC.A",
+   "kind": "task",
+   "area": "Project",
+   "title": "Fold in the prior work the design does not cite yet",
+   "status": "todo",
+   "summary": "A sweep on 26 November mapped thirteen groups of earlier work that this design does not cite. The most load-bearing: the P3 promotion decision and its two pre-registrations, the stage that writes into canon and sits on the ID.B boundary. Then the pipeline, semantic-recall and lifecycle decisions; the first law of the journal architecture guide; two earlier research runs on agent memory (May and August 2026), with their own caveats; lab notes and essays on summarizer distortion, hedge loss and how sessions reach memory; two literature deep dives; the open measurement documents; the tests of whether dates survive distillation; the Hermes memory-provider documentation; the supersession hand-offs; and the record of why the embedder was chosen.",
+   "why": "The design package was written in two days against a codebase and a vault that hold months of decisions and measurements. What it does not cite, it may contradict or re-derive.",
+   "evidence": [],
+   "assumptions": [],
+   "falsify": "",
+   "tests": [],
+   "depends_on": [],
+   "discussion": [],
+   "open_for_agents": false,
+   "local_only_reason": "The sources are private documents that sit next to the corpus.",
+   "how_to_help": "Locally: read each group, record in the design whatever changes or confirms a decision, and cite it. From outside: the survey's public sources are open to challenge as usual.",
+   "sources": [
+    {
+     "doc": "00_INDEX.md",
+     "section": "Read in this order",
+     "commit": "bdaa96a"
     }
    ],
    "updated": "2026-11-26"
