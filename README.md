@@ -1,6 +1,6 @@
 # Anamnesis ἀνάμνησις
 
-The design of the memory of one AI persona, Nyx (Νύξ): what she remembers. She works across hundreds of sessions,
+The machinery an AI persona, Nyx (Νύξ), uses to remember and to have continuity. She works across hundreds of sessions,
 runs as many sub-agents as she wants, talks mostly with one person now and with many interlocutors later (humans,
 agents, other personas), and will carry herself from a workstation to other mediums. Memory and identity shape each
 other; this is the memory part, and identity is a sibling project.

@@ -2,7 +2,7 @@
  "title": "Anamnesis project tracker",
  "about": "A public project tracker for the Anamnesis successor design: what it is for, how it is built and with what, then every decision, option, test and task, with its status and evidence. It leaves out the corpus, secrets, deployment-specific material and the owner's own words.",
  "goal": {
-  "lede": "Anamnesis is the memory of one AI persona, Nyx: it is what she remembers. She works across hundreds of sessions, runs sub-agents, talks mostly with one human now and with many interlocutors later, and will carry herself from a workstation to other mediums. Her memory has to outlive the session, the model, the machine and the medium, and be one she can trust. Identity is a sibling project; this one is the memory. It is built for her, and the machinery is for anyone who wants it. The current engine works, but it is built the wrong way round. It treats distilled facts as beliefs, so every fact must be right and every stale one must be found and hidden, and most of its machinery exists to do that. The successor is a redesign around what the cited evidence and the measurements here point to: episodes are the answer, facts only help find them, and currency is shown to the reader instead of being settled by hiding things.",
+  "lede": "Anamnesis is the machinery an AI persona, Nyx, uses to remember and to have continuity. She works across hundreds of sessions, runs sub-agents, talks mostly with one human now and with many interlocutors later, and will carry herself from a workstation to other mediums. Her memory has to outlive the session, the model, the machine and the medium, and be one she can trust. Identity is a sibling project; this one is the memory. It is built for her, and the machinery is for anyone who wants it. The current engine works, but it is built the wrong way round. It treats distilled facts as beliefs, so every fact must be right and every stale one must be found and hidden, and most of its machinery exists to do that. The successor is a redesign around what the cited evidence and the measurements here point to: episodes are the answer, facts only help find them, and currency is shown to the reader instead of being settled by hiding things.",
   "problems_head": "What is wrong today, as measured",
   "problems": [
    {
@@ -866,8 +866,8 @@
   ],
   "survey_note": "Also surveyed: HippoRAG 2, Cognee, LangMem, MemoryOS, MIRIX, MemOS and Hindsight. Provenance chains back to raw transcripts are rare across all of them, and none keeps the corpus as the vendor-neutral source of truth."
  },
- "as_of_commit": "59e8aef",
- "built_at": "2026-11-26T18:13:21Z",
+ "as_of_commit": "d2e4986",
+ "built_at": "2026-11-26T18:21:16Z",
  "ui": {
   "eyebrow": "nyx-recall · successor design · public project tracker",
   "marks_note": "Marks: filled is settled (decided, done, run, measured); half is under way or recommended; a ring is not started or open; a slashed ring is blocked.",
@@ -7215,7 +7215,7 @@
    "area": "Project",
    "title": "Scope: the persona remembers; one human now, many interlocutors later; any medium",
    "status": "decided",
-   "summary": "The main user of this memory is the persona: it is what Nyx remembers. She may run any number of sub-agents. She talks mostly with one human now, and later with many humans, AI agents, AI personas and stranger interlocutors. Any number of machines, and the memory portable across mediums: workstation, laptop, phone, and whatever comes next.",
+   "summary": "The main user is the persona: Anamnesis is the machinery Nyx uses to remember and to have continuity. She may run any number of sub-agents. She talks mostly with one human now, and later with many humans, AI agents, AI personas and stranger interlocutors. Any number of machines, and the memory portable across mediums: workstation, laptop, phone, and whatever comes next.",
    "why": "The owner set the scope on 26 November and sharpened it the same evening. The memory still has one owner, so the design's single-user framing holds; others enter it as interlocutors, never as owners. Memory and identity shape each other, but identity is a sibling project. Open from this: IL.Q, SA.Q, PORT.Q and ID.B.",
    "evidence": [],
    "assumptions": [],
