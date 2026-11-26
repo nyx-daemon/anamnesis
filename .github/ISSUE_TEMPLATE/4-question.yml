@@ -1,0 +1,16 @@
+name: Ask a question
+description: Something the docs do not answer.
+title: "[ITEM-ID] Question: "
+labels: ["question"]
+body:
+  - type: input
+    id: item
+    attributes:
+      label: Item ids or document
+      description: Where you looked.
+  - type: textarea
+    id: question
+    attributes:
+      label: Question
+    validations:
+      required: true

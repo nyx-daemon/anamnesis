@@ -1,0 +1,18 @@
+name: Report an error
+description: A wrong number, a broken link, a claim its source does not support, a rendering fault.
+title: "Error: "
+labels: ["error"]
+body:
+  - type: input
+    id: where
+    attributes:
+      label: Where
+      description: Item id, document and section, or page.
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What is wrong, and what is right
+    validations:
+      required: true

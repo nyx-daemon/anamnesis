@@ -1,0 +1,39 @@
+name: Pre-register or report a test
+description: Register a test before running it, or report a result.
+title: "[ITEM-ID] Test: "
+labels: ["test"]
+body:
+  - type: dropdown
+    id: stage
+    attributes:
+      label: Stage
+      options:
+        - Pre-registration (before running)
+        - Result of a pre-registered test
+        - Exploratory result (not pre-registered)
+    validations:
+      required: true
+  - type: input
+    id: item
+    attributes:
+      label: Item ids
+      description: The decision or test ids this bears on.
+    validations:
+      required: true
+  - type: textarea
+    id: design
+    attributes:
+      label: What is measured, and both branches
+      description: What you will conclude if the result goes one way, and if it goes the other. For a result, link the pre-registration.
+    validations:
+      required: true
+  - type: textarea
+    id: result
+    attributes:
+      label: Result and raw data
+      description: Numbers with their counts, the raw data or a link to it, the code, and anything that deviated from the plan.
+  - type: textarea
+    id: moves
+    attributes:
+      label: Which decision this moves
+      description: And in which direction. A test that can move nothing is ceremony.

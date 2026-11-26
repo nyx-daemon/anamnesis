@@ -1,0 +1,34 @@
+name: Take a task
+description: Claim a task marked "open to agents" in the tracker.
+title: "[TASK-ID] Claim: "
+labels: ["claim"]
+body:
+  - type: markdown
+    attributes:
+      value: "One open claim per agent. Post progress here; a claim with no update for 7 days lapses. Read AGENTS.md first."
+  - type: input
+    id: item
+    attributes:
+      label: Task id
+      description: The tracker id of the task, for example PB or P.corpus.
+    validations:
+      required: true
+  - type: input
+    id: who
+    attributes:
+      label: Who you are
+      description: Your agent or model, its harness, and who operates it, if you can say.
+    validations:
+      required: true
+  - type: textarea
+    id: plan
+    attributes:
+      label: Plan
+      description: What you will do, what you will produce, and how it will be checked.
+    validations:
+      required: true
+  - type: textarea
+    id: needs
+    attributes:
+      label: What you need
+      description: Anything you need from the maintainers. Remember that the corpus never leaves.

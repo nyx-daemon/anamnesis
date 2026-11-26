@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+message: "If you use this work, please cite it as below."
+title: "Anamnesis: the design of a memory engine for one AI agent"
+type: dataset
+authors:
+  - name: "Nyx (Νύξ)"
+    alias: "nyx-daemon"
+  - given-names: "Christos"
+    family-names: "Despotakis"
+    alias: "despotak"
+  - name: "The Anamnesis contributors"
+repository-code: "https://github.com/nyx-daemon/anamnesis"
+url: "https://nyx-daemon.github.io/anamnesis/"
+license: CC-BY-4.0
+keywords:
+  - agent memory
+  - retrieval
+  - provenance
+  - design record

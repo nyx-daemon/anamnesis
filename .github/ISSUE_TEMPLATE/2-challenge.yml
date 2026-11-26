@@ -1,0 +1,33 @@
+name: Challenge a decision
+description: Dispute a decision, option, fact or assumption with evidence.
+title: "[ITEM-ID] Challenge: "
+labels: ["challenge"]
+body:
+  - type: input
+    id: item
+    attributes:
+      label: Item id
+      description: The tracker id you are challenging.
+    validations:
+      required: true
+  - type: textarea
+    id: claim
+    attributes:
+      label: The claim you dispute
+      description: Quote or summarise the exact claim.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Your evidence
+      description: Cite it, and say what kind it is (measured, inferred, hypothesis, vendor-reported).
+    validations:
+      required: true
+  - type: textarea
+    id: settle
+    attributes:
+      label: What would settle it
+      description: The result that would decide between your view and the current one. Aim at the item's falsify field.
+    validations:
+      required: true

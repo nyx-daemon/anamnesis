@@ -1,0 +1,497 @@
+<title>Anamnesis Project Tracker</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="tracker-shell-commit" content="@@SHELL_COMMIT@@">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+@@FONT_LINK@@
+<style>@@CSS@@
+/* shell only: the loading line and the fallback */
+.fail{background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--opn);border-radius:0 8px 8px 0;padding:14px 16px;display:grid;gap:8px;max-width:76ch;font-size:.92rem}
+.fail b{font-family:var(--f-display)}
+</style>
+<noscript><style>#boot-status{display:none}</style></noscript>
+<div class="wrap" id="app">
+<header class="top">
+<h1>Anamnesis <span class="gr">project tracker</span></h1>
+<p class="stamp" id="boot-status" role="status">Loading the tracker data from tracker.public.json</p>
+</header>
+<noscript><div class="fail"><p><b>This page draws the tracker with JavaScript, which is off.</b></p>@@FALLBACK@@</div></noscript>
+<div class="fail" id="boot-fail" role="alert" hidden><p><b>The tracker data could not be shown.</b> <span id="boot-why"></span></p>@@FALLBACK@@</div>
+</div>
+<script>
+(function(){
+  'use strict';
+  // Constants filled in by build_tracker.py from its own KINDS, VOCAB and TONE.
+  var KINDS=@@KINDS@@, VOCAB=@@VOCAB@@, TONE=@@TONE@@;
+  var DATA_URL='tracker.public.json', TIMEOUT_MS=10000;
+  var app=document.getElementById('app'), stat=document.getElementById('boot-status'),
+      fail=document.getElementById('boot-fail'), why=document.getElementById('boot-why');
+  var has=Object.prototype.hasOwnProperty;
+
+  // ---------------------------------------------------------------- text in, escaped markup out
+  // Every data string passes through esc() or inline() before it meets markup. Mirrors build_tracker.py.
+  function str(v){
+    if(typeof v!=='string'){throw new Error('a text field is not a string');}
+    return v;
+  }
+  function esc(s){
+    return str(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+                 .replace(/"/g,'&quot;').replace(/'/g,'&#x27;');
+  }
+  var RX=null;
+  function rx(){
+    // Built on first use, inside the render's try: an engine without lookbehind lands in the error state.
+    if(!RX){
+      RX={
+        code:/(`[^`]+`)/,
+        bold:/\*\*([^\n]+?)\*\*/g,
+        ital:new RegExp('(?<![\\p{L}\\p{N}_*])\\*(?!\\s)([^\\n]+?)(?<!\\s)\\*(?![\\p{L}\\p{N}_*])','gu'),
+        cell:new RegExp('(?<!\\\\)\\|'),
+        fence:/^(```+|~~~~+)/,
+        ul:/^- /,
+        ol:/^(\d+)\. /,
+        olStrip:/^\d+\. /,
+        brk:/^(- |\d+\. |\||```|~~~~)/,
+        sep:/^\|[\s:|-]+\|?$/
+      };
+    }
+    return RX;
+  }
+  function inline(s){
+    var R=rx(), parts=str(s).split(R.code), out=[];
+    for(var i=0;i<parts.length;i++){
+      var p=parts[i];
+      if(p.charAt(0)==='`'&&p.charAt(p.length-1)==='`'&&p.length>1){
+        out.push('<code>'+esc(p.slice(1,-1))+'</code>');
+        continue;
+      }
+      out.push(esc(p).replace(R.bold,'<b>$1</b>').replace(R.ital,'<i>$1</i>'));
+    }
+    return out.join('');
+  }
+  function mdBlock(text){
+    var R=rx(), lines=str(text).split('\n'), out=[], i=0, m, lis, j;
+    while(i<lines.length){
+      var ln=lines[i];
+      if(!ln.trim()){i++;continue;}
+      m=R.fence.exec(ln);
+      if(m){
+        var f=m[1], body=[];
+        j=i+1;
+        while(j<lines.length&&lines[j].slice(0,f.length)!==f){body.push(lines[j]);j++;}
+        out.push('<pre class="fx"><code>'+esc(body.join('\n'))+'</code></pre>');
+        i=j+1;
+        continue;
+      }
+      if(ln.charAt(0)==='|'){
+        var rows=[];
+        while(i<lines.length&&lines[i].charAt(0)==='|'){rows.push(lines[i]);i++;}
+        out.push(mdTable(rows));
+        continue;
+      }
+      if(R.ul.test(ln)){
+        lis=[];
+        while(i<lines.length&&R.ul.test(lines[i])){lis.push(lines[i].slice(2));i++;}
+        out.push('<ul>'+lis.map(function(x){return '<li>'+inline(x)+'</li>';}).join('')+'</ul>');
+        continue;
+      }
+      m=R.ol.exec(ln);
+      if(m){
+        var start=parseInt(m[1],10);
+        lis=[];
+        while(i<lines.length&&R.olStrip.test(lines[i])){lis.push(lines[i].replace(R.olStrip,''));i++;}
+        var st=start!==1?' start="'+start+'"':'';
+        out.push('<ol'+st+'>'+lis.map(function(x){return '<li>'+inline(x)+'</li>';}).join('')+'</ol>');
+        continue;
+      }
+      var para=[ln];
+      i++;
+      while(i<lines.length&&lines[i].trim()&&!R.brk.test(lines[i])){para.push(lines[i]);i++;}
+      out.push('<p>'+inline(para.join(' '))+'</p>');
+    }
+    return out.join('');
+  }
+  function mdTable(rows){
+    var R=rx();
+    function cells(r){
+      r=r.trim();
+      r=r.slice(-1)==='|'?r.slice(1,-1):r.slice(1);
+      return r.split(R.cell).map(function(c){return c.trim();});
+    }
+    var head=cells(rows[0]);
+    var body=(rows.length>1&&R.sep.test(rows[1])?rows.slice(2):rows.slice(1)).map(cells);
+    var th=head.map(function(c){return '<th>'+inline(c)+'</th>';}).join('');
+    var trs=body.map(function(r){
+      return '<tr>'+r.map(function(c){return '<td>'+inline(c.split('\\|').join('|'))+'</td>';}).join('')+'</tr>';
+    }).join('');
+    return '<div class="tablewrap"><table class="t"><thead><tr>'+th+'</tr></thead><tbody>'+trs+'</tbody></table></div>';
+  }
+  function slug(s){return str(s).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');}
+
+  // ---------------------------------------------------------------- relations and counts
+  function tone(s){
+    if(!has.call(TONE,s)){throw new Error('unknown status in the data');}
+    return TONE[s];
+  }
+  function relations(items){
+    var by={}, neededBy={}, testedFor={}, children={};
+    items.forEach(function(it){by[it.id]=it;neededBy[it.id]=[];testedFor[it.id]=[];children[it.id]=[];});
+    function push(map,k,v){
+      if(!has.call(map,k)){throw new Error('reference to an unknown id');}
+      map[k].push(v);
+    }
+    items.forEach(function(it){
+      it.depends_on.forEach(function(d){push(neededBy,d,it.id);});
+      it.tests.forEach(function(t){push(testedFor,t,it.id);});
+      if(it.parent){push(children,it.parent,it.id);}
+    });
+    return {by:by,neededBy:neededBy,testedFor:testedFor,children:children};
+  }
+  function counts(items){
+    var c={};
+    items.forEach(function(it){
+      if(!has.call(c,it.kind)){c[it.kind]={};}
+      c[it.kind][it.status]=(c[it.kind][it.status]||0)+1;
+    });
+    return c;
+  }
+  function total(o){var n=0;for(var k in o){if(has.call(o,k)){n+=o[k];}}return n;}
+
+  // ---------------------------------------------------------------- items
+  function mark(status){return '<i class="mk m-'+tone(status)+'" aria-hidden="true"></i>';}
+  function chip(rel,iid,showStatus){
+    if(!has.call(rel.by,iid)){throw new Error('reference to an unknown id');}
+    var it=rel.by[iid], t=tone(it.status);
+    var st=showStatus===false?'':'<em>'+esc(it.status)+'</em>';
+    return '<a class="chip t-'+t+'" href="#'+esc(iid)+'" title="'+esc(it.title)+'">'+mark(it.status)+
+           '<span>'+esc(iid)+'</span>'+st+'</a>';
+  }
+  function chips(rel,ids,showStatus){return ids.map(function(i){return chip(rel,i,showStatus);}).join('');}
+  function isOpen(it){
+    if(typeof it.open_for_agents!=='boolean'){throw new Error('open_for_agents is not true or false');}
+    return it.open_for_agents;
+  }
+  function renderItem(it,rel,ui){
+    var t=tone(it.status), open=isOpen(it);
+    var agent=open?'<span class="ag on">open to agents</span>':'<span class="ag">local only</span>';
+    var head='<summary>'+mark(it.status)+'<span><span class="iid">'+esc(it.id)+'</span>'+
+             '<span class="nm">'+esc(it.title)+'</span></span><span class="pm" aria-hidden="true"></span>'+
+             '<span class="st"><span class="w">'+esc(it.status)+'</span>'+
+             '<span class="tg">'+esc(it.kind)+' · '+esc(it.area)+'</span>'+agent+'</span></summary>';
+    var body=['<div class="fld"><b class="dl">Summary</b>'+mdBlock(it.summary)+'</div>'];
+    if(it.why){body.push('<div class="fld"><b class="dl">Why</b>'+mdBlock(it.why)+'</div>');}
+    if(it.evidence.length){
+      var rows=it.evidence.map(function(e){
+        return '<tr><td>'+inline(e.claim)+'</td><td>'+inline(e.value)+'</td><td>'+esc(e.kind)+'</td>'+
+               '<td>'+inline(e.source)+'</td></tr>';
+      }).join('');
+      body.push('<div class="fld"><b class="dl">Evidence</b><div class="tablewrap"><table class="t"><thead><tr>'+
+                '<th>Claim</th><th>Value</th><th>Kind</th><th>Source</th></tr></thead>'+
+                '<tbody>'+rows+'</tbody></table></div></div>');
+    }
+    if(it.assumptions.length){
+      body.push('<div class="fld"><b class="dl">Assumptions</b><ul>'+
+                it.assumptions.map(function(a){return '<li>'+inline(a)+'</li>';}).join('')+'</ul></div>');
+    }
+    var fz=it.falsify?mdBlock(it.falsify):'<p class="muted">'+inline(ui.no_falsify)+'</p>';
+    body.push('<div class="fld"><b class="dl">What would change it</b>'+fz+'</div>');
+    var rels=[['Part of',it.parent?[it.parent]:[]],['Parts and options',rel.children[it.id]],['Tests',it.tests],
+              ['Depends on',it.depends_on],['Needed by',rel.neededBy[it.id]],['Bears on',rel.testedFor[it.id]]]
+             .filter(function(r){return r[1].length;});
+    if(rels.length){
+      body.push('<div class="rels">'+rels.map(function(r){
+        return '<b class="dl">'+r[0]+'</b><div class="chips">'+chips(rel,r[1])+'</div>';
+      }).join('')+'</div>');
+    }
+    if(it.discussion.length){
+      body.push('<div class="fld"><b class="dl">Discussion</b><ul>'+it.discussion.map(function(d){
+        return '<li><b>'+esc(d.who)+':</b> '+inline(d.gist)+' <span class="muted">('+inline(d.source)+')</span></li>';
+      }).join('')+'</ul></div>');
+    }
+    var local=open?'':'<p class="muted"><b>Local only:</b> '+inline(it.local_only_reason)+'</p>';
+    body.push('<div class="fld"><b class="dl">How to help</b>'+mdBlock(it.how_to_help)+local+'</div>');
+    body.push('<div class="srcs"><b class="dl">Sources</b>'+it.sources.map(function(s){
+      return '<span>'+esc(s.doc)+' · '+inline(s.section)+' · <code>'+esc(s.commit)+'</code></span>';
+    }).join('')+'<span>Updated '+esc(it.updated)+'</span></div>');
+    return '<details class="it t-'+t+'" id="'+esc(it.id)+'" data-kind="'+esc(it.kind)+'" '+
+           'data-status="'+esc(it.status)+'" data-area="'+slug(it.area)+'" '+
+           'data-open="'+(open?1:0)+'">'+head+'<div class="dt">'+body.join('')+'</div></details>';
+  }
+
+  // ---------------------------------------------------------------- page
+  // ---------------------------------------------------------------- goal and technology (mirror goal_html, tech_html)
+  function renderGoal(g,rel){
+    if(!g||!Array.isArray(g.problems)||!Array.isArray(g.aims)||!Array.isArray(g.non_goals)){
+      throw new Error('the goal block is missing or malformed');
+    }
+    function listed(rs){
+      return '<ol class="rules">'+rs.map(function(r){
+        return '<li>'+inline(r.text)+'<span class="chips">'+chips(rel,r.items,false)+'</span></li>';
+      }).join('')+'</ol>';
+    }
+    var cols=[['problems','problems_head'],['aims','aims_head'],['non_goals','non_goals_head']].map(function(kh){
+      return '<div><h3 class="sub">'+esc(g[kh[1]])+'</h3>'+listed(g[kh[0]])+'</div>';
+    }).join('');
+    return '<section class="sec" id="goal"><h2>The goal</h2><p class="alede">'+inline(g.lede)+'</p>'+
+           '<div class="goalg">'+cols+'</div></section>';
+  }
+  function renderTech(t,rel){
+    if(!t||!Array.isArray(t.rows)||!Array.isArray(t.survey)){
+      throw new Error('the technology block is missing or malformed');
+    }
+    var cards=t.rows.map(function(r){
+      return '<div class="tc"><span class="k">'+esc(r.part)+'</span><b>'+inline(r.choice)+'</b>'+
+             '<p><span>Why</span> '+inline(r.why)+'</p><p><span>Chosen over</span> '+inline(r.over)+'</p>'+
+             '<div class="chips">'+chips(rel,r.items,false)+'</div></div>';
+    }).join('');
+    var rows=t.survey.map(function(r){
+      return '<tr><td>'+esc(r.system)+'</td><td>'+inline(r.took)+'</td><td>'+inline(r.left)+'</td>'+
+             '<td><div class="chips">'+chips(rel,r.items,false)+'</div></td></tr>';
+    }).join('');
+    return '<section class="sec" id="tech"><h2>Technologies</h2><p class="alede">'+inline(t.lede)+'</p>'+
+           '<div class="techg">'+cards+'</div><h3 class="sub">'+esc(t.survey_head)+'</h3>'+
+           '<div class="tablewrap"><table class="t"><thead><tr><th>System</th><th>Taken</th><th>Left</th>'+
+           '<th>Items</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
+           '<p class="kicker">'+inline(t.survey_note)+'</p></section>';
+  }
+
+  // ---------------------------------------------------------------- architecture (mirrors arch_html in the builder)
+  function renderArch(a,rel){
+    if(!a||typeof a!=='object'||!Array.isArray(a.lanes)||!Array.isArray(a.rules)||!Array.isArray(a.flow)||
+       !Array.isArray(a.layers)||!a.overlay||!a.doors||!a.waits_on){
+      throw new Error('the architecture block is missing or malformed');
+    }
+    function box(b){
+      if(!b||!Array.isArray(b.items)||!b.items.length||!has.call(rel.by,b.items[0])){
+        throw new Error('an architecture box points at an unknown id');
+      }
+      var p=rel.by[b.items[0]], t=tone(p.status);
+      var tag=b.tag?'<span class="tag">'+esc(b.tag)+'</span>':'';
+      var rest=chips(rel,b.items.slice(1),false);
+      var kids=Array.isArray(b.kids)&&b.kids.length?'<div class="kids">'+b.kids.map(box).join('')+'</div>':'';
+      return '<div class="an t-'+t+'"><a class="an-h" href="#'+esc(p.id)+'" title="'+esc(p.title)+'">'+
+             mark(p.status)+'<b>'+esc(b.name)+'</b>'+tag+'<em>'+esc(p.id)+' · '+esc(p.status)+'</em></a>'+
+             '<p>'+inline(b.line)+'</p>'+(rest?'<div class="chips">'+rest+'</div>':'')+kids+'</div>';
+    }
+    function listed(rows,cls,show){
+      return '<ol class="'+cls+'">'+rows.map(function(r){
+        return '<li>'+inline(r.text)+'<span class="chips">'+chips(rel,r.items,show===true)+'</span></li>';
+      }).join('')+'</ol>';
+    }
+    var lanes=a.lanes.map(function(ln,j){
+      var out=ln.out?'<p class="out">'+inline(ln.out)+'</p>':'';
+      return '<div class="lane"><h4><span class="n">'+(j+1)+'</span>'+esc(ln.name)+'<small>'+esc(ln.lede)+
+             '</small></h4>'+ln.nodes.map(box).join('')+out+'</div>';
+    }).join('');
+    var rows=a.layers.map(function(r){
+      return '<tr><td><code>'+esc(r.code)+'</code> '+esc(r.name)+'</td><td>'+inline(r.what)+'</td><td>'+
+             esc(r.git)+'</td><td><div class="chips">'+chips(rel,r.items)+'</div></td></tr>';
+    }).join('');
+    return '<section class="sec" id="arch"><h2>Architecture</h2>'+
+           '<p class="alede">'+inline(a.lede)+'</p>'+
+           '<h3 class="sub">'+esc(a.rules_head)+'</h3>'+listed(a.rules,'rules',true)+
+           '<h3 class="sub">'+esc(a.map_head)+'</h3><p class="kicker">'+inline(a.map_note)+'</p>'+
+           '<div class="arch"><div class="ov">'+box(a.overlay)+'</div><div class="lanes">'+lanes+'</div>'+
+           '<div class="doors">'+box(a.doors)+'</div></div>'+
+           '<p class="waits">'+inline(a.waits_on.lede)+chips(rel,a.waits_on.items)+'</p>'+
+           '<h3 class="sub">'+esc(a.flow_head)+'</h3>'+listed(a.flow,'flow')+
+           '<h3 class="sub">'+esc(a.layers_head)+'</h3><div class="tablewrap"><table class="t"><thead><tr>'+
+           '<th>Layer</th><th>What it is</th><th>In git?</th><th>Items</th></tr></thead>'+
+           '<tbody>'+rows+'</tbody></table></div></section>';
+  }
+
+  function renderPage(data){
+    if(!data||typeof data!=='object'||!Array.isArray(data.items)||!Array.isArray(data.areas)){
+      throw new Error('tracker.public.json does not hold the tracker dataset');
+    }
+    var items=data.items, ui=data.ui, rel=relations(items), c=counts(items), o=[];
+    function inArea(a){return items.filter(function(it){return it.area===a.name;});}
+    o.push('<header class="top">');
+    o.push('<p class="eyebrow">'+esc(ui.eyebrow)+'</p>');
+    o.push('<h1>Anamnesis <span class="gr">project tracker</span></h1>');
+    o.push('<p class="lede">'+inline(data.about)+'</p>');
+    o.push('<p class="stamp">as of commit '+esc(data.as_of_commit)+' · built '+esc(data.built_at)+' · '+
+           items.length+' items</p>');
+    o.push('<nav class="toc" aria-label="Sections"><a href="#goal">Goal</a><a href="#arch">Architecture</a>'+
+           '<a href="#tech">Technologies</a><a href="#stand">Where we stand</a><a href="#agents">For agents</a>'+
+           '<a href="#map">Project map</a><a href="#frontier">Open tasks</a><a href="#items">All items</a></nav>');
+    o.push('</header>');
+    o.push(renderGoal(data.goal,rel));
+    o.push(renderArch(data.architecture,rel));
+    o.push(renderTech(data.technology,rel));
+
+    // where we stand
+    var tiles=[];
+    KINDS.forEach(function(k){
+      if(!has.call(c,k)){return;}
+      var sts=VOCAB[k].filter(function(s){return has.call(c[k],s);}).map(function(s){
+        return '<span class="t-'+tone(s)+'">'+mark(s)+esc(s)+' '+c[k][s]+'</span>';
+      }).join('');
+      tiles.push('<div class="tile"><b>'+esc(k)+'<span>'+total(c[k])+'</span></b><div class="sts">'+sts+'</div></div>');
+    });
+    var nOpen=items.filter(isOpen).length;
+    o.push('<section class="sec" id="stand"><h2>Where we stand</h2><div class="stand">'+
+           '<ul>'+data.where_we_stand.map(function(p){return '<li>'+inline(p)+'</li>';}).join('')+'</ul>'+
+           '<div class="tiles">'+tiles.join('')+'</div></div>'+
+           '<p class="note">'+nOpen+' of '+items.length+' items are open to outside agents. '+inline(ui.marks_note)+
+           '</p></section>');
+
+    // for agents
+    var col=data.colony;
+    o.push('<section class="sec" id="agents"><h2>For agents</h2><div class="agents"><ul>'+
+           data.for_agents.map(function(p){return '<li>'+inline(p)+'</li>';}).join('')+'</ul>'+
+           '<p class="note">Feedback: '+esc(col.site)+' · '+esc(col.colony)+' · post <code>'+esc(col.post)+
+           '</code></p></div></section>');
+
+    // project map
+    var cards=[];
+    data.areas.forEach(function(a){
+      var its=inArea(a);
+      if(its.length){
+        cards.push('<div class="mapc"><h3><a href="#area-'+slug(a.name)+'">'+esc(a.name)+'</a></h3>'+
+                   '<div class="chips">'+its.map(function(it){return chip(rel,it.id,false);}).join('')+'</div></div>');
+      }
+    });
+    o.push('<section class="sec" id="map"><h2>Project map</h2><p class="kicker">'+inline(ui.map_kicker)+'</p>'+
+           '<div class="map">'+cards.join('')+'</div></section>');
+
+    // open tasks
+    var rows=[];
+    items.forEach(function(it){
+      if(it.kind==='task'&&it.status!=='done'){
+        var t=tone(it.status), ag=isOpen(it)?'open to agents':'local only';
+        var deps=chips(rel,it.depends_on)||'<span class="note">none</span>';
+        var tests=chips(rel,it.tests)||'<span class="note">none</span>';
+        rows.push('<div class="fr t-'+t+'"><div class="tt"><a href="#'+esc(it.id)+'">'+mark(it.status)+' '+
+                  esc(it.id)+' · '+esc(it.title)+'</a><span class="meta"><em>'+esc(it.status)+'</em> · '+
+                  ag+'</span></div><div class="chips">'+deps+'</div><div class="chips">'+tests+'</div></div>');
+      }
+    });
+    o.push('<section class="sec" id="frontier"><h2>Open tasks</h2><p class="kicker">'+inline(ui.tasks_kicker)+
+           '</p><div class="frontier"><div class="frh"><span>Task</span>'+
+           '<span>Depends on</span><span>Tests</span></div>'+rows.join('')+'</div></section>');
+
+    // controls and items
+    var statuses=[];
+    KINDS.forEach(function(k){
+      VOCAB[k].forEach(function(s){
+        if(statuses.indexOf(s)<0&&items.some(function(it){return it.status===s;})){statuses.push(s);}
+      });
+    });
+    o.push('<section class="sec" id="items"><h2>All items</h2>');
+    o.push('<div class="controls" role="search">'+
+           '<input type="search" id="f-q" placeholder="Search ids and text" aria-label="Search">'+
+           '<select id="f-kind" aria-label="Kind"><option value="">Any kind</option>'+
+           KINDS.filter(function(k){return has.call(c,k);}).map(function(k){
+             return '<option value="'+esc(k)+'">'+esc(k)+'</option>';}).join('')+'</select>'+
+           '<select id="f-status" aria-label="Status"><option value="">Any status</option>'+
+           statuses.map(function(s){return '<option value="'+esc(s)+'">'+esc(s)+'</option>';}).join('')+'</select>'+
+           '<select id="f-area" aria-label="Area"><option value="">Any area</option>'+
+           data.areas.map(function(a){return '<option value="'+slug(a.name)+'">'+esc(a.name)+'</option>';}).join('')+
+           '</select>'+
+           '<label class="ck"><input type="checkbox" id="f-open"> open to agents</label>'+
+           '<button class="btn" id="f-expand" type="button">Expand all</button>'+
+           '<button class="btn" id="f-reset" type="button">Reset</button>'+
+           '<span class="count" id="f-count" aria-live="polite"></span></div>');
+    data.areas.forEach(function(a){
+      var its=inArea(a);
+      if(!its.length){return;}
+      o.push('<section class="area" id="area-'+slug(a.name)+'"><h2>'+esc(a.name)+'</h2>'+
+             '<p class="kicker">'+inline(a.lede)+'</p>');
+      its.forEach(function(it){o.push(renderItem(it,rel,ui));});
+      o.push('</section>');
+    });
+    o.push('</section>');
+    o.push('<footer><p>Built by build_tracker.py from tracker.json · as of commit '+esc(data.as_of_commit)+' · '+
+           'built '+esc(data.built_at)+'.</p><p>'+inline(ui.footer_data)+'</p></footer>');
+    return o.join('\n');
+  }
+
+  // ---------------------------------------------------------------- filters, search, expand all, hash reveal
+  function wire(){
+    var items=[].slice.call(document.querySelectorAll('details.it'));
+    var text=items.map(function(e){return e.textContent.toLowerCase();});
+    var q=document.getElementById('f-q'), k=document.getElementById('f-kind'), s=document.getElementById('f-status'),
+        a=document.getElementById('f-area'), o=document.getElementById('f-open'), cnt=document.getElementById('f-count');
+    function apply(){
+      var words=q.value.toLowerCase().split(/\s+/).filter(Boolean), n=0;
+      items.forEach(function(e,i){
+        var ok=(!k.value||e.getAttribute('data-kind')===k.value)&&(!s.value||e.getAttribute('data-status')===s.value)&&
+               (!a.value||e.getAttribute('data-area')===a.value)&&(!o.checked||e.getAttribute('data-open')==='1')&&
+               words.every(function(w){return text[i].indexOf(w)>=0;});
+        e.hidden=!ok; if(ok){n++;}
+      });
+      [].forEach.call(document.querySelectorAll('section.area'),function(sec){
+        sec.hidden=!sec.querySelector('details.it:not([hidden])');
+      });
+      cnt.textContent=n+' of '+items.length+' items';
+    }
+    [q,k,s,a,o].forEach(function(el){el.addEventListener('input',apply);el.addEventListener('change',apply);});
+    document.getElementById('f-reset').addEventListener('click',function(){
+      q.value='';k.value='';s.value='';a.value='';o.checked=false;apply();
+    });
+    var ex=document.getElementById('f-expand'), open=false;
+    ex.addEventListener('click',function(){
+      open=!open;
+      items.forEach(function(d){if(!d.hidden){d.open=open;}});
+      ex.textContent=open?'Collapse all':'Expand all';
+    });
+    function reveal(){
+      var id;
+      try{id=decodeURIComponent(location.hash.slice(1));}catch(e){return;}
+      if(!id){return;}
+      var t=document.getElementById(id);
+      if(t&&t.tagName==='DETAILS'){
+        if(t.hidden){q.value='';k.value='';s.value='';a.value='';o.checked=false;apply();}
+        t.open=true; t.scrollIntoView({block:'start'});
+      }
+    }
+    window.addEventListener('hashchange',reveal);
+    apply(); reveal();
+  }
+
+  // ---------------------------------------------------------------- load
+  function failWith(msg){
+    stat.hidden=true;
+    why.textContent=msg;
+    fail.hidden=false;
+  }
+  function load(){
+    if(typeof fetch!=='function'){failWith('This browser cannot fetch the data file.');return;}
+    var done=false, ctl=typeof AbortController==='function'?new AbortController():null;
+    var timer=setTimeout(function(){
+      if(done){return;}
+      done=true;
+      if(ctl){try{ctl.abort();}catch(e){}}
+      failWith('The data file did not arrive within 10 seconds. Reload the page to try again.');
+    },TIMEOUT_MS);
+    function stop(msg){
+      if(done){return;}
+      done=true;
+      clearTimeout(timer);
+      failWith(msg);
+    }
+    var opts={cache:'no-cache',credentials:'same-origin'};
+    if(ctl){opts.signal=ctl.signal;}
+    fetch(DATA_URL,opts).then(function(r){
+      if(!r.ok){throw {shown:'The server answered '+r.status+' for tracker.public.json.'};}
+      return r.text();
+    }).then(function(body){
+      if(done){return;}
+      var data, html;
+      try{data=JSON.parse(body);}catch(e){throw {shown:'tracker.public.json arrived but is not valid JSON.'};}
+      try{html=renderPage(data);}catch(e){
+        throw {shown:'The data arrived but could not be drawn ('+(e&&e.message?e.message:'unknown error')+').'};
+      }
+      done=true;
+      clearTimeout(timer);
+      app.innerHTML=html;
+      wire();
+    }).catch(function(e){
+      stop(e&&e.shown?e.shown:'The data file could not be fetched ('+(e&&e.message?e.message:'network error')+').');
+    });
+  }
+  load();
+})();
+</script>
