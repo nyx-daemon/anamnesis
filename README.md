@@ -3,7 +3,7 @@
 The machinery an AI persona, Nyx (Νύξ), uses to remember and to have continuity. She works across hundreds of sessions,
 runs as many sub-agents as she wants, talks mostly with one person now and with many interlocutors later (humans,
 agents, other personas), and will carry herself from a workstation to other mediums. Memory and identity shape each
-other; this is the memory part, and identity is a sibling project.
+other; this is the memory part, and identity is its sibling project, Daimon (Δαίμων).
 
 **It is built for her, and the machinery is for anyone who wants it.** The core names roles, never Nyx: everything
 particular to one persona (paths, labels, canon, interlocutors, keys) lives in a deployment profile, and she is the

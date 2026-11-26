@@ -2,7 +2,7 @@
  "title": "Anamnesis project tracker",
  "about": "A public project tracker for the Anamnesis successor design: what it is for, how it is built and with what, then every decision, option, test and task, with its status and evidence. It leaves out the corpus, secrets, deployment-specific material and the owner's own words.",
  "goal": {
-  "lede": "Anamnesis is the machinery an AI persona, Nyx, uses to remember and to have continuity. She works across hundreds of sessions, runs sub-agents, talks mostly with one human now and with many interlocutors later, and will carry herself from a workstation to other mediums. Her memory has to outlive the session, the model, the machine and the medium, and be one she can trust. Identity is a sibling project; this one is the memory. It is built for her, and the machinery is for anyone who wants it. The current engine works, but it is built the wrong way round. It treats distilled facts as beliefs, so every fact must be right and every stale one must be found and hidden, and most of its machinery exists to do that. The successor is a redesign around what the cited evidence and the measurements here point to: episodes are the answer, facts only help find them, and currency is shown to the reader instead of being settled by hiding things.",
+  "lede": "Anamnesis is the machinery an AI persona, Nyx, uses to remember and to have continuity. She works across hundreds of sessions, runs sub-agents, talks mostly with one human now and with many interlocutors later, and will carry herself from a workstation to other mediums. Her memory has to outlive the session, the model, the machine and the medium, and be one she can trust. Identity is a sibling project, Daimon; this one is the memory. It is built for her, and the machinery is for anyone who wants it. The current engine works, but it is built the wrong way round. It treats distilled facts as beliefs, so every fact must be right and every stale one must be found and hidden, and most of its machinery exists to do that. The successor is a redesign around what the cited evidence and the measurements here point to: episodes are the answer, facts only help find them, and currency is shown to the reader instead of being settled by hiding things.",
   "problems_head": "What is wrong today, as measured",
   "problems": [
    {
@@ -151,7 +151,7 @@
     ]
    },
    {
-    "text": "Not the identity. How the persona is defined, carried, protected and re-aligned is a sibling project; this one is the memory.",
+    "text": "Not the identity. How the persona is defined, carried, protected and re-aligned is the sibling project, Daimon; this one is the memory.",
     "items": [
      "ID.B"
     ]
@@ -885,8 +885,8 @@
   ],
   "survey_note": "Also surveyed: HippoRAG 2, Cognee, LangMem, MemoryOS, MIRIX, MemOS and Hindsight; and, for the persona's harness in September 2026, ten memory providers, seven of which hand the model a delete verb. Provenance chains back to raw transcripts are rare across all of them, and none keeps the corpus as the vendor-neutral source of truth."
  },
- "as_of_commit": "cfc7481",
- "built_at": "2026-11-26T18:56:12Z",
+ "as_of_commit": "60230fa",
+ "built_at": "2026-11-26T19:27:24Z",
  "ui": {
   "eyebrow": "nyx-recall · successor design · public project tracker",
   "marks_note": "Marks: filled is settled (decided, done, run, measured); half is under way or recommended; a ring is not started or open; a slashed ring is blocked.",
@@ -7451,9 +7451,9 @@
    "id": "ID.B",
    "kind": "question",
    "area": "Project",
-   "title": "The boundary with the identity project",
+   "title": "The boundary with Daimon, the identity project",
    "status": "open",
-   "summary": "Memory and identity shape each other. How the persona is defined, stored, carried, protected, updated, re-aligned and presented is a sibling project; this one is the memory. Canon (L4), P3 promotion into it, and the persona probe set sit on the boundary: which project owns each, and what interface the two share, is to be drawn.",
+   "summary": "Memory and identity shape each other. How the persona is defined, stored, carried, protected, updated, re-aligned and presented is a sibling project, Daimon; this one is the memory. Canon (L4), P3 promotion into it, and the persona probe set sit on the boundary: which project owns each, and what interface the two share, is to be drawn.",
    "why": "Follows from SCOPE.",
    "evidence": [],
    "assumptions": [],
@@ -7473,6 +7473,11 @@
      "doc": "07_decisions.md",
      "section": "Decided (2026-11-26): Scope, sharpened the same evening",
      "commit": "081e90f"
+    },
+    {
+     "doc": "07_decisions.md",
+     "section": "Decided (2026-11-26): The identity project is named Daimon",
+     "commit": "60230fa"
     }
    ],
    "updated": "2026-11-26"
