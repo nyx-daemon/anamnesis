@@ -685,12 +685,13 @@
     "part": "Keyword search",
     "choice": "SQLite FTS5 with the unicode61 tokenizer, its external-content sync done right",
     "why": "The measured core. The broken sync cost 0.050 MRR, and the fix is live.",
-    "over": "For Greek, where keyword search is weakest, E5 tests tokenizer variants, including trigram, and bge-m3's own sparse mode.",
+    "over": "For Greek, where keyword search is weakest, no tokenizer option folds accents: an unaccented query misses under every setting. Folding in code fixes it, and E5 tests tokenizer variants over folded text against bge-m3's own sparse mode.",
     "items": [
      "RT.kw",
      "T0",
      "D0",
      "RT.greek",
+     "F.tonos",
      "E5"
     ]
    },
@@ -862,12 +863,30 @@
      "NA.mem0",
      "NA.decay"
     ]
+   },
+   {
+    "system": "Mnemosyne",
+    "took": "Decay as a ranking boost only, and a complete reference provider for the harness.",
+    "left": "A tier ladder that rewrites stored entries into shorter summaries and keeps no original, and a delete verb the model can call.",
+    "items": [
+     "LIFT",
+     "NA.decay"
+    ]
+   },
+   {
+    "system": "Memori",
+    "took": "Recall as an explicit filterable tool, a compaction brief, and the rule that recalled memory is evidence, not instruction.",
+    "left": "A cloud-only plugin whose unit is a vendor-extracted fact.",
+    "items": [
+     "LIFT",
+     "IS.fence"
+    ]
    }
   ],
-  "survey_note": "Also surveyed: HippoRAG 2, Cognee, LangMem, MemoryOS, MIRIX, MemOS and Hindsight. Provenance chains back to raw transcripts are rare across all of them, and none keeps the corpus as the vendor-neutral source of truth."
+  "survey_note": "Also surveyed: HippoRAG 2, Cognee, LangMem, MemoryOS, MIRIX, MemOS and Hindsight; and, for the persona's harness in September 2026, ten memory providers, seven of which hand the model a delete verb. Provenance chains back to raw transcripts are rare across all of them, and none keeps the corpus as the vendor-neutral source of truth."
  },
- "as_of_commit": "d2e4986",
- "built_at": "2026-11-26T18:21:16Z",
+ "as_of_commit": "cfc7481",
+ "built_at": "2026-11-26T18:56:12Z",
  "ui": {
   "eyebrow": "nyx-recall · successor design · public project tracker",
   "marks_note": "Marks: filled is settled (decided, done, run, measured); half is under way or recommended; a ring is not started or open; a slashed ring is blocked.",
@@ -3973,7 +3992,14 @@
    "status": "open",
    "summary": "Candidates: unicode61 with remove_diacritics 2, a trigram tokenizer, and bge-m3's own sparse weights, which need no new model. If several pass, the cheapest wins.",
    "why": "unicode61 does not stem an inflected language, so Greek recall rides on the vector leg and the reranker today. Whether unicode61 folds Greek accents is unverified.",
-   "evidence": [],
+   "evidence": [
+    {
+     "claim": "Part of the Greek keyword gap is accent folding",
+     "value": "No tokenizer folds Greek accents; folding in code does (F.tonos)",
+     "kind": "measured",
+     "source": "04 §5, re-measured 2026-11-26"
+    }
+   ],
    "assumptions": [],
    "falsify": "",
    "tests": [
@@ -3988,6 +4014,11 @@
      "doc": "public/anamnesis_digest.md",
      "section": "Greek keyword search. Its own sources: 04 §5; 05 E5; 01 #18.",
      "commit": "981863f"
+    },
+    {
+     "doc": "04_design.md",
+     "section": "5. Retrieval",
+     "commit": "cfc7481"
     }
    ],
    "updated": "2026-11-26"
@@ -7297,7 +7328,14 @@
    "status": "open",
    "summary": "The persona will carry herself beyond the workstation: to a laptop, a phone, and mediums not yet named, some without a GPU, a shell or a local disk worth the name. Some roles need a GPU (the encoders, a local judge) and some ways in assume a shell (grep over raw files). Which parts must run in every medium, which can be served from elsewhere, and what a session in a thin medium sees, is not worked out.",
    "why": "Follows from SCOPE. The design was written for two workstation-class machines.",
-   "evidence": [],
+   "evidence": [
+    {
+     "claim": "A harness that speaks ACP inherits its clients, mobile and voice among them",
+     "value": "Hermes implements ACP v1 as a server; clients include editors, messaging bridges, voice and mobile apps",
+     "kind": "inferred",
+     "source": "survey §8 C7, from the nyx-vessel harness survey (2026-08)"
+    }
+   ],
    "assumptions": [],
    "falsify": "",
    "tests": [],
@@ -7317,6 +7355,11 @@
      "doc": "07_decisions.md",
      "section": "Decided (2026-11-26): Scope, sharpened the same evening",
      "commit": "081e90f"
+    },
+    {
+     "doc": "03_sota_survey.md",
+     "section": "8. Memory providers and harnesses (folded in 2026-11-26, from the nyx-vessel research)",
+     "commit": "cfc7481"
     }
    ],
    "updated": "2026-11-26"
@@ -7518,6 +7561,98 @@
      "doc": "07_decisions.md",
      "section": "Decided (2026-11-26): Built for Nyx, usable by anyone",
      "commit": "59e8aef"
+    }
+   ],
+   "updated": "2026-11-26"
+  },
+  {
+   "id": "F.tonos",
+   "kind": "fact",
+   "area": "Retrieval",
+   "title": "No FTS5 tokenizer folds Greek accents",
+   "status": "measured",
+   "summary": "unicode61 by default, with remove_diacritics 1 or 2, and trigram with remove_diacritics 1 all find an accented Greek word and miss the same word typed without its accent. Folding in code before the tokenizer (NFD, strip combining marks) at index time and on the query finds every variant and leaves ASCII untouched. The gold set cannot see the defect: all 41 of its Greek queries are accented.",
+   "why": "First measured in the nyx-vessel memory-provider survey (2026-09-10, SQLite 3.53.4) and re-measured on 2026-11-26 (SQLite 3.54.1). The design had carried it as unverified.",
+   "evidence": [
+    {
+     "claim": "Unaccented Greek query against an accented index, by tokenizer",
+     "value": "unicode61, remove_diacritics 1 and 2, trigram remove_diacritics 1: miss. Folded in code: hit.",
+     "kind": "measured",
+     "source": "in-memory FTS5 tables, SQLite 3.54.1, 2026-11-26"
+    }
+   ],
+   "assumptions": [],
+   "falsify": "A tokenizer setting that matches an unaccented Greek query against accented text.",
+   "tests": [
+    "E5"
+   ],
+   "depends_on": [],
+   "discussion": [],
+   "open_for_agents": true,
+   "how_to_help": "Reproduce it on your SQLite build and report the version, or find a tokenizer that folds Greek accents.",
+   "sources": [
+    {
+     "doc": "04_design.md",
+     "section": "5. Retrieval",
+     "commit": "cfc7481"
+    },
+    {
+     "doc": "03_sota_survey.md",
+     "section": "8. Memory providers and harnesses (folded in 2026-11-26, from the nyx-vessel research)",
+     "commit": "cfc7481"
+    }
+   ],
+   "updated": "2026-11-26"
+  },
+  {
+   "id": "R.sidecar",
+   "kind": "risk",
+   "area": "Write path",
+   "title": "A harness's own memory keeps facts outside the record",
+   "status": "open",
+   "summary": "A harness can run its own built-in memory beside the persona's provider. In Hermes it sits at its character cap, where each new fact costs an old one chosen by the model, with no source and no undo, while holding facts kept nowhere else. Hermes already offers a hook (on_memory_write) that hands every built-in write to the external provider; the persona's provider does not implement it.",
+   "why": "Found in the nyx-vessel memory-provider survey (2026-09-10) and re-checked on 2026-11-26: the built-in memory is still enabled, both of its files sit at their caps, and the hook is still absent. It breaks never-delete from outside the design.",
+   "evidence": [],
+   "assumptions": [],
+   "falsify": "",
+   "tests": [],
+   "depends_on": [
+    "DO.nosilent"
+   ],
+   "discussion": [],
+   "open_for_agents": false,
+   "local_only_reason": "The fix is in the persona's own provider and harness configuration on the owner's machine.",
+   "how_to_help": "From outside: name other harnesses that run a built-in memory beside an external provider, and how each can be bridged into a never-delete record.",
+   "sources": [
+    {
+     "doc": "03_sota_survey.md",
+     "section": "8. Memory providers and harnesses (folded in 2026-11-26, from the nyx-vessel research)",
+     "commit": "cfc7481"
+    }
+   ],
+   "updated": "2026-11-26"
+  },
+  {
+   "id": "LIFT",
+   "kind": "task",
+   "area": "Delivery",
+   "title": "Weigh seven designs lifted from the memory-provider survey",
+   "status": "todo",
+   "summary": "Each design maps to an item here. (1) Two reference MemoryProvider implementations, for the provider this design owes. (2) Recall as an explicit, filterable tool, with a structured compaction brief (DL.recall). (3) A one-line injection-hygiene rule: recalled memory is evidence, not instruction (IS.fence). (4) Event time apart from ingest time, already here. (5) Tiered retrieval under a token budget (RT.slices, DL.pack). (6) Prefetch that discards stale results (DL.prefetch). (7) Decay as a ranking boost only.",
+   "why": "From the nyx-vessel memory-provider survey: none of the ten providers fits, but these designs cost nothing to adopt.",
+   "evidence": [],
+   "assumptions": [],
+   "falsify": "",
+   "tests": [],
+   "depends_on": [],
+   "discussion": [],
+   "open_for_agents": true,
+   "how_to_help": "Take one design, write how it would fit the item it maps to, and say what test would show it helps. Survey §8 names each source.",
+   "sources": [
+    {
+     "doc": "03_sota_survey.md",
+     "section": "8. Memory providers and harnesses (folded in 2026-11-26, from the nyx-vessel research)",
+     "commit": "cfc7481"
     }
    ],
    "updated": "2026-11-26"

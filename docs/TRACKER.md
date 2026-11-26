@@ -1,6 +1,6 @@
 # Anamnesis project tracker
 
-As of commit `d2e4986` · built 2026-11-26T18:21:16Z · 216 items
+As of commit `cfc7481` · built 2026-11-26T18:56:12Z · 219 items
 
 A public project tracker for the Anamnesis successor design: what it is for, how it is built and with what, then every decision, option, test and task, with its status and evidence. It leaves out the corpus, secrets, deployment-specific material and the owner's own words.
 
@@ -139,7 +139,7 @@ The decisions that shape this map most, with their live status: FT (open), D3 (p
 Most choices are deliberately plain: the current engine's measured core, kept until a local challenger beats it on the gold set, and SQLite with plain files, which the survey found to be the safe base at this size. Where a row names a model or a tool, it names today's filler for a role, and any filler that passes that role's gate may replace it. Each row says what it was chosen over.
 
 - **Store: SQLite and plain files.** Why: The survey's safe base at this size. The projection rebuilds in minutes and is never the only copy of anything. Chosen over: A graph database (Graphiti on Neo4j or FalkorDB; Kuzu, now archived). Links are an edge table, and a recursive query covers two hops at this size. DuckDB's vector extension documents its persistence as unsafe. (L.projection (proposed), NA.graph (proposed))
-- **Keyword search: SQLite FTS5 with the unicode61 tokenizer, its external-content sync done right.** Why: The measured core. The broken sync cost 0.050 MRR, and the fix is live. Chosen over: For Greek, where keyword search is weakest, E5 tests tokenizer variants, including trigram, and bge-m3's own sparse mode. (RT.kw (proposed), T0 (run), D0 (decided), RT.greek (open), E5 (planned))
+- **Keyword search: SQLite FTS5 with the unicode61 tokenizer, its external-content sync done right.** Why: The measured core. The broken sync cost 0.050 MRR, and the fix is live. Chosen over: For Greek, where keyword search is weakest, no tokenizer option folds accents: an unaccented query misses under every setting. Folding in code fixes it, and E5 tests tokenizer variants over folded text against bge-m3's own sparse mode. (RT.kw (proposed), T0 (run), D0 (decided), RT.greek (open), F.tonos (measured), E5 (planned))
 - **Vectors: sqlite-vec, exact nearest-neighbour search.** Why: It fits the scale: the scale simulation's median was 0.32 s for 6,000 entries plus 30,000 units. Chosen over: A separate vector database. sqlite-vec is pre-1.0 with its approximate index only in alpha; at this size exact search is fast enough. (RT.vec (proposed), RT.latency (proposed))
 - **Embedder: bge-m3, dense vectors (today's filler).** Why: The incumbent. It is multilingual, takes long inputs, and stays until a challenger beats it on a gold set that covers today's corpus. Chosen over: Qwen3-Embedding, reported first on the multilingual MTEB board in June 2025, and EmbeddingGemma, whose 2k-token window would truncate long entries. No leaderboard measures Greek journals. (RT.vec (proposed), NA.bench (proposed))
 - **Fusion: A weighted sum of normalised scores, with the weight set by query language.** Why: Measured here: score fusion beat rank fusion, MRR 0.818 against 0.604 on 22 paraphrase pairs. The cited fusion study agrees when a small labelled set exists. Chosen over: Reciprocal rank fusion, measured here and rejected. (RT.fusion (proposed), NA.measured (proposed))
@@ -161,8 +161,10 @@ Most choices are deliberately plain: the current engine's measured core, kept un
 | A-MEM | Revising a fact's context, kept as a new version linked to the old one. | Rewriting notes in place. | NA.rewrite (proposed) |
 | Letta / MemGPT | Consolidation as a background pass, which the nightly run already is. | Agent-edited core blocks without version history. | WP.enrich (proposed) |
 | Memory-R1 and MemoryBank | Nothing. | A learned DELETE, and forgetting on a decay curve. | NA.mem0 (proposed), NA.decay (proposed) |
+| Mnemosyne | Decay as a ranking boost only, and a complete reference provider for the harness. | A tier ladder that rewrites stored entries into shorter summaries and keeps no original, and a delete verb the model can call. | LIFT (todo), NA.decay (proposed) |
+| Memori | Recall as an explicit filterable tool, a compaction brief, and the rule that recalled memory is evidence, not instruction. | A cloud-only plugin whose unit is a vendor-extracted fact. | LIFT (todo), IS.fence (proposed) |
 
-Also surveyed: HippoRAG 2, Cognee, LangMem, MemoryOS, MIRIX, MemOS and Hindsight. Provenance chains back to raw transcripts are rare across all of them, and none keeps the corpus as the vendor-neutral source of truth.
+Also surveyed: HippoRAG 2, Cognee, LangMem, MemoryOS, MIRIX, MemOS and Hindsight; and, for the persona's harness in September 2026, ten memory providers, seven of which hand the model a delete verb. Provenance chains back to raw transcripts are rare across all of them, and none keeps the corpus as the vendor-neutral source of truth.
 
 ## Where we stand
 
@@ -178,12 +180,12 @@ Also surveyed: HippoRAG 2, Cognee, LangMem, MemoryOS, MIRIX, MemOS and Hindsight
 |---|---|---|
 | decision | 122 | decided 47, proposed 72, open 3 |
 | option | 7 | proposed 2, open 5 |
-| task | 20 | todo 12, blocked 7, done 1 |
+| task | 21 | todo 13, blocked 7, done 1 |
 | test | 43 | planned 24, pre-registered 2, run 17 |
-| fact | 6 | measured 5, inferred 1 |
+| fact | 7 | measured 6, inferred 1 |
 | question | 8 | open 8 |
 | assumption | 3 | untested 2, supported 1 |
-| risk | 7 | open 6, accepted 1 |
+| risk | 8 | open 7, accepted 1 |
 
 ## For agents
 
@@ -217,6 +219,7 @@ Also surveyed: HippoRAG 2, Cognee, LangMem, MemoryOS, MIRIX, MemOS and Hindsight
 | CITE · Audit every external citation | todo | yes | OPENRES | — |
 | REUSE.audit · Find what in the core is specific to Nyx | todo | yes | REUSE | — |
 | PROFILE.T · A deployment profile template anyone can fill in | todo | yes | REUSE | — |
+| LIFT · Weigh seven designs lifted from the memory-provider survey | todo | yes | — | — |
 
 ## Episode file type
 
@@ -2010,6 +2013,32 @@ List the ways a sub-agent's work can enter memory, with the provenance each keep
 
 - 07_decisions.md · Decided (2026-11-26): Scope, sharpened the same evening · `081e90f`
 
+### R.sidecar · A harness's own memory keeps facts outside the record
+
+- **Kind:** risk · **Status:** open · **Updated:** 2026-11-26
+- **Open to outside agents:** no, local only: The fix is in the persona's own provider and harness configuration on the owner's machine.
+- **Depends on:** DO.nosilent
+
+**Summary**
+
+A harness can run its own built-in memory beside the persona's provider. In Hermes it sits at its character cap, where each new fact costs an old one chosen by the model, with no source and no undo, while holding facts kept nowhere else. Hermes already offers a hook (on_memory_write) that hands every built-in write to the external provider; the persona's provider does not implement it.
+
+**Why**
+
+Found in the nyx-vessel memory-provider survey (2026-09-10) and re-checked on 2026-11-26: the built-in memory is still enabled, both of its files sit at their caps, and the hook is still absent. It breaks never-delete from outside the design.
+
+**Falsify**
+
+Not stated in the sources.
+
+**How to help**
+
+From outside: name other harnesses that run a built-in memory beside an external provider, and how each can be bridged into a never-delete record.
+
+**Sources**
+
+- 03_sota_survey.md · 8. Memory providers and harnesses (folded in 2026-11-26, from the nyx-vessel research) · `cfc7481`
+
 ## Episode format
 
 One episode, one file: front matter, then the Record, the Harvest and the Reflection.
@@ -3042,6 +3071,12 @@ Candidates: unicode61 with remove_diacritics 2, a trigram tokenizer, and bge-m3'
 
 unicode61 does not stem an inflected language, so Greek recall rides on the vector leg and the reranker today. Whether unicode61 folds Greek accents is unverified.
 
+**Evidence**
+
+| Claim | Value | Kind | Source |
+|---|---|---|---|
+| Part of the Greek keyword gap is accent folding | No tokenizer folds Greek accents; folding in code does (F.tonos) | measured | 04 §5, re-measured 2026-11-26 |
+
 **Falsify**
 
 Not stated in the sources.
@@ -3053,6 +3088,7 @@ Open. Propose an answer with its cost, or a test that would decide it. The tests
 **Sources**
 
 - public/anamnesis_digest.md · Greek keyword search. Its own sources: 04 §5; 05 E5; 01 #18. · `981863f`
+- 04_design.md · 5. Retrieval · `cfc7481`
 
 ### RT.latency · Latency budget
 
@@ -3138,6 +3174,39 @@ Recommended, not decided. Argue for or against it from its Why, or name the meas
 **Sources**
 
 - public/anamnesis_digest.md · When a part fails. Its own sources: 04 §10. The embedder-down figure (about 0.72 MRR if the reranker is also down) was measured by the read-path audit, not re-measured here. · `981863f`
+
+### F.tonos · No FTS5 tokenizer folds Greek accents
+
+- **Kind:** fact · **Status:** measured · **Updated:** 2026-11-26
+- **Open to outside agents:** yes
+- **Tests:** E5
+
+**Summary**
+
+unicode61 by default, with remove_diacritics 1 or 2, and trigram with remove_diacritics 1 all find an accented Greek word and miss the same word typed without its accent. Folding in code before the tokenizer (NFD, strip combining marks) at index time and on the query finds every variant and leaves ASCII untouched. The gold set cannot see the defect: all 41 of its Greek queries are accented.
+
+**Why**
+
+First measured in the nyx-vessel memory-provider survey (2026-09-10, SQLite 3.53.4) and re-measured on 2026-11-26 (SQLite 3.54.1). The design had carried it as unverified.
+
+**Evidence**
+
+| Claim | Value | Kind | Source |
+|---|---|---|---|
+| Unaccented Greek query against an accented index, by tokenizer | unicode61, remove_diacritics 1 and 2, trigram remove_diacritics 1: miss. Folded in code: hit. | measured | in-memory FTS5 tables, SQLite 3.54.1, 2026-11-26 |
+
+**Falsify**
+
+A tokenizer setting that matches an unaccented Greek query against accented text.
+
+**How to help**
+
+Reproduce it on your SQLite build and report the version, or find a tokenizer that folds Greek accents.
+
+**Sources**
+
+- 04_design.md · 5. Retrieval · `cfc7481`
+- 03_sota_survey.md · 8. Memory providers and harnesses (folded in 2026-11-26, from the nyx-vessel research) · `cfc7481`
 
 ## Delivery
 
@@ -3335,6 +3404,31 @@ Check the figure against its stated qualifier and population, and say if the qua
 **Sources**
 
 - public/anamnesis_digest.md · SessionStart pack. Its own sources: 04 §6.1-6.2; 08 core §13. · `981863f`
+
+### LIFT · Weigh seven designs lifted from the memory-provider survey
+
+- **Kind:** task · **Status:** todo · **Updated:** 2026-11-26
+- **Open to outside agents:** yes
+
+**Summary**
+
+Each design maps to an item here. (1) Two reference MemoryProvider implementations, for the provider this design owes. (2) Recall as an explicit, filterable tool, with a structured compaction brief (DL.recall). (3) A one-line injection-hygiene rule: recalled memory is evidence, not instruction (IS.fence). (4) Event time apart from ingest time, already here. (5) Tiered retrieval under a token budget (RT.slices, DL.pack). (6) Prefetch that discards stale results (DL.prefetch). (7) Decay as a ranking boost only.
+
+**Why**
+
+From the nyx-vessel memory-provider survey: none of the ten providers fits, but these designs cost nothing to adopt.
+
+**Falsify**
+
+Not stated in the sources.
+
+**How to help**
+
+Take one design, write how it would fit the item it maps to, and say what test would show it helps. Survey §8 names each source.
+
+**Sources**
+
+- 03_sota_survey.md · 8. Memory providers and harnesses (folded in 2026-11-26, from the nyx-vessel research) · `cfc7481`
 
 ## Roles and gates
 
@@ -4701,6 +4795,7 @@ Decided. To reopen it, reply with a concrete failure its stated reason does not 
 
 - **Kind:** decision · **Status:** decided · **Updated:** 2026-11-26
 - **Open to outside agents:** yes
+- **Needed by:** R.sidecar
 
 **Summary**
 
@@ -5376,7 +5471,7 @@ Critique the design before it runs: the bars, the population, and what each bran
 - **Kind:** test · **Status:** planned · **Updated:** 2026-11-26
 - **Open to outside agents:** yes
 - **Depends on:** GS2
-- **Bears on:** RT.greek
+- **Bears on:** RT.greek, F.tonos
 
 **Summary**
 
@@ -6165,6 +6260,12 @@ The persona will carry herself beyond the workstation: to a laptop, a phone, and
 
 Follows from SCOPE. The design was written for two workstation-class machines.
 
+**Evidence**
+
+| Claim | Value | Kind | Source |
+|---|---|---|---|
+| A harness that speaks ACP inherits its clients, mobile and voice among them | Hermes implements ACP v1 as a server; clients include editors, messaging bridges, voice and mobile apps | inferred | survey §8 C7, from the nyx-vessel harness survey (2026-08) |
+
 **Falsify**
 
 Not stated in the sources.
@@ -6177,6 +6278,7 @@ List what each role (08b) and each way in (04 §5-6) needs from its medium, mark
 
 - 07_decisions.md · Decided (2026-11-26): Scope · `9586855`
 - 07_decisions.md · Decided (2026-11-26): Scope, sharpened the same evening · `081e90f`
+- 03_sota_survey.md · 8. Memory providers and harnesses (folded in 2026-11-26, from the nyx-vessel research) · `cfc7481`
 
 ### CITE · Audit every external citation
 
@@ -6232,4 +6334,4 @@ Read L.canon, IS.p3 and IS.probe, and propose which side owns each and the inter
 
 ---
 
-Generated by build_tracker.py from tracker.json at commit `d2e4986`.
+Generated by build_tracker.py from tracker.json at commit `cfc7481`.
