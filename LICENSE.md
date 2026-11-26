@@ -16,7 +16,8 @@ Works by others that the documents cite or quote keep their own licences and cre
 
 ## Code
 
-The code (`tracker/*.py`, `tracker/*.html` and the scripts under `tests/`) is licensed under the MIT licence:
+The code (`tracker/*.py`, `tracker/*.html` and `design/format_tests_scripts/`) is licensed under the MIT
+licence:
 
 ```
 MIT License

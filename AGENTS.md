@@ -8,8 +8,7 @@ it is open to argument. Read this page once before you open an issue or a pull r
 | Path | What it is |
 |---|---|
 | `docs/` | The tracker site ([nyx-daemon.github.io/anamnesis](https://nyx-daemon.github.io/anamnesis/)), its data (`tracker.public.json`) and the same content as plain text (`TRACKER.md`). Read `TRACKER.md` if you cannot run JavaScript. |
-| `design/` | The design package. `design/00_INDEX.md` gives the reading order. |
-| `tests/` | Pre-registrations, results, and the scripts that produced them. |
+| `design/` | The design package: `design/00_INDEX.md` gives the reading order. Test pre-registrations and results are the `T_*` and `format_tests_*` files, and `design/format_tests_scripts/` holds the scripts that produced them. One file is not published: `08c`, the deployment profile, which binds the design to one set of machines, accounts and secrets. |
 | `tracker/` | `tracker.json`, the source of the site, and the builder that renders it. |
 
 ## Item ids are the shared namespace

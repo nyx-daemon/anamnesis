@@ -1,0 +1,6 @@
+# Test runs write logs, scores and harness config folders next to their scripts. Never commit them.
+design/format_tests_scripts/r_logs/
+design/format_tests_scripts/r2_logs/
+design/format_tests_scripts/r_scores_*.json
+design/format_tests_scripts/r_cfg*/
+__pycache__/

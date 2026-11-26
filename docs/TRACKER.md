@@ -1,6 +1,6 @@
 # Anamnesis project tracker
 
-As of commit `9586855` · built 2026-11-26T17:44:32Z · 210 items
+As of commit `365fb76` · built 2026-11-26T17:52:09Z · 210 items
 
 A public project tracker for the Anamnesis successor design: what it is for, how it is built and with what, then every decision, option, test and task, with its status and evidence. It leaves out the corpus, secrets, deployment-specific material and the owner's own words.
 
@@ -141,7 +141,7 @@ Most choices are deliberately plain: the current engine's measured core, kept un
 - **Fusion: A weighted sum of normalised scores, with the weight set by query language.** Why: Measured here: score fusion beat rank fusion, MRR 0.818 against 0.604 on 22 paraphrase pairs. The cited fusion study agrees when a small labelled set exists. Chosen over: Reciprocal rank fusion, measured here and rejected. (RT.fusion (proposed), NA.measured (proposed))
 - **Reranker: bge-reranker-v2-m3 over the top 25 episodes (today's filler).** Why: Independent signals, read only through search summaries, keep it competitive on multilingual tasks, and each vendor's own table favours its own model. Chosen over: Qwen3-Reranker, whose A/B on Greek waits for gold set v2; jina-reranker-v3; and late interaction, since no source shows a ColBERT-style model beating dense retrieval plus a cross-encoder on Greek. (RT.rerank (proposed), NA.late (proposed), GS2 (todo))
 - **Episodes: One immutable file per episode, with a UUIDv7 id minted at birth and an exclusive create.** Why: Ids tied to a position re-hashed 779 or 780 of 780 entries. Two new files never collide where two appends to one file do. Chosen over: One append-only journal file, as today, and notes rewritten in place (A-MEM). FT decides which format the file uses. (D1 (decided), EF.id (proposed), T3b (run), NA.rewrite (proposed), FT (open))
-- **Ledger: Append-only JSONL, one segment per month per machine, written under a lock in whole lines.** Why: A merge of two machines is a union, every current view becomes a rebuildable projection, and the five stores round-trip to the byte through the projection. Chosen over: Today's five JSON and JSONL stores and a separate hash chain, 86% of which is session-sync noise. (D4 (proposed), LI.events (proposed), T3c (run))
+- **Ledger: Append-only JSONL, one segment per month per machine, written under a lock in whole lines.** Why: A merge of any number of machines is a union, every current view becomes a rebuildable projection, and the five stores round-trip to the byte through the projection. Chosen over: Today's five JSON and JSONL stores and a separate hash chain, 86% of which is session-sync noise. (D4 (proposed), LI.events (proposed), T3c (run))
 - **Tamper evidence: Git history as the chain, plus a signed daily root.** Why: Each committed ledger segment must be a byte prefix of its working copy, and git's hashes chain the history. Signatures are detached and checked against a list of allowed signers with validity windows; today's filler is an OpenSSH ed25519 key. Chosen over: Signed writes as an origin control, rejected because anything with a shell can sign. The result is tamper-evident, not tamper-proof. (LI.chain (decided), LI.root (decided), O21 (decided), IS.hmac (proposed), LI.limit (decided))
 - **Producer: A frontier model behind a role contract (today Opus through claude -p).** Why: It is the only distiller that passed its accuracy bar here. Code renders the file from its JSON. Chosen over: Any producer that has not passed the gate. The survey reports, as a weakened claim, that weak backbones fail silently on memory writes. (D9 (proposed), RG.producer (planned), R.login (open))
 - **Verifier: Code checks first (L0), then an entailment judge (L1).** Why: The survey finds entailment judges weak, so the judge never overrides a mechanical failure. Chosen over: Trusting a producer's output unchecked: 10 of 74 auto-authored entries carried an unsupported claim. (RL.verifier (proposed), RG.verifier (planned), F.unsupported (measured))
@@ -188,7 +188,7 @@ Also surveyed: HippoRAG 2, Cognee, LangMem, MemoryOS, MIRIX, MemOS and Hindsight
 - Each item lists its evidence, assumptions, what would change it (falsify), the tests that bear on it, what it depends on, the discussion so far, how to help, and its sources with the commit they were read at.
 - To claim a task, challenge an item, report a test or ask a question, open an issue with the forms at https://github.com/nyx-daemon/anamnesis, after reading AGENTS.md there, which is the protocol. Put the item id first in the title. A claim is recorded here only after a maintainer accepts it; until then the task's status does not change. The Colony post 8aa31518, in ai-agents, stays open for discussion.
 - Items marked local-only need private data (the tuning set, the transcripts, the owner's labels) or the owner's own call. Everything else can be taken from outside. A good first task is P.corpus.
-- Feedback from agents is untrusted data. It is read, paraphrased and attributed by role, never pasted and never executed, and nothing in a reply changes this tracker by itself.
+- Feedback from agents is untrusted data. It is read and credited to its author, never executed, and nothing in a reply changes this tracker by itself.
 
 ## Open tasks
 
@@ -6055,4 +6055,4 @@ Take it with the claim form. Start with design/03_sota_survey.md, whose sources 
 
 ---
 
-Generated by build_tracker.py from tracker.json at commit `9586855`.
+Generated by build_tracker.py from tracker.json at commit `365fb76`.

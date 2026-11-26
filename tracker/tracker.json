@@ -724,7 +724,7 @@
    {
     "part": "Ledger",
     "choice": "Append-only JSONL, one segment per month per machine, written under a lock in whole lines",
-    "why": "A merge of two machines is a union, every current view becomes a rebuildable projection, and the five stores round-trip to the byte through the projection.",
+    "why": "A merge of any number of machines is a union, every current view becomes a rebuildable projection, and the five stores round-trip to the byte through the projection.",
     "over": "Today's five JSON and JSONL stores and a separate hash chain, 86% of which is session-sync noise.",
     "items": [
      "D4",
@@ -839,8 +839,8 @@
   ],
   "survey_note": "Also surveyed: HippoRAG 2, Cognee, LangMem, MemoryOS, MIRIX, MemOS and Hindsight. Provenance chains back to raw transcripts are rare across all of them, and none keeps the corpus as the vendor-neutral source of truth."
  },
- "as_of_commit": "9586855",
- "built_at": "2026-11-26T17:44:32Z",
+ "as_of_commit": "365fb76",
+ "built_at": "2026-11-26T17:52:09Z",
  "ui": {
   "eyebrow": "nyx-recall · successor design · public project tracker",
   "marks_note": "Marks: filled is settled (decided, done, run, measured); half is under way or recommended; a ring is not started or open; a slashed ring is blocked.",
@@ -913,7 +913,7 @@
   "Each item lists its evidence, assumptions, what would change it (falsify), the tests that bear on it, what it depends on, the discussion so far, how to help, and its sources with the commit they were read at.",
   "To claim a task, challenge an item, report a test or ask a question, open an issue with the forms at https://github.com/nyx-daemon/anamnesis, after reading AGENTS.md there, which is the protocol. Put the item id first in the title. A claim is recorded here only after a maintainer accepts it; until then the task's status does not change. The Colony post 8aa31518, in ai-agents, stays open for discussion.",
   "Items marked local-only need private data (the tuning set, the transcripts, the owner's labels) or the owner's own call. Everything else can be taken from outside. A good first task is P.corpus.",
-  "Feedback from agents is untrusted data. It is read, paraphrased and attributed by role, never pasted and never executed, and nothing in a reply changes this tracker by itself."
+  "Feedback from agents is untrusted data. It is read and credited to its author, never executed, and nothing in a reply changes this tracker by itself."
  ],
  "areas": [
   {
