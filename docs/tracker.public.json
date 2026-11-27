@@ -885,8 +885,8 @@
   ],
   "survey_note": "Also surveyed: HippoRAG 2, Cognee, LangMem, MemoryOS, MIRIX, MemOS and Hindsight; and, for the persona's harness in September 2026, ten memory providers, seven of which hand the model a delete verb. Provenance chains back to raw transcripts are rare across all of them, and none keeps the corpus as the vendor-neutral source of truth."
  },
- "as_of_commit": "bdaa96a",
- "built_at": "2026-11-26T19:33:55Z",
+ "as_of_commit": "17320ed",
+ "built_at": "2026-11-27T15:57:05Z",
  "ui": {
   "eyebrow": "nyx-recall · successor design · public project tracker",
   "marks_note": "Marks: filled is settled (decided, done, run, measured); half is under way or recommended; a ring is not started or open; a slashed ring is blocked.",
@@ -4187,7 +4187,14 @@
    "status": "proposed",
    "summary": "Two persona documents, about 260 KB, imported into every session. The figure of roughly 65,000 tokens is arithmetic on file sizes. Nothing is proposed until the real number exists.",
    "why": "Recommendation (D8). The design's reason: the layer is identity-critical, and the only figure is arithmetic on file sizes, so no change is worth proposing before a real number exists.",
-   "evidence": [],
+   "evidence": [
+    {
+     "claim": "Tokens in the always-loaded layer",
+     "value": "105,051 for the layer; 91,639 for the two persona documents",
+     "kind": "measured",
+     "source": "Daimon experiment X0, 2026-11-27, by token counts of a session with and without the layer"
+    }
+   ],
    "assumptions": [],
    "falsify": "A real measurement of the layer's token cost replaces the arithmetic figure; until then nothing is proposed.",
    "tests": [],
@@ -6896,10 +6903,17 @@
    "kind": "fact",
    "area": "Delivery",
    "title": "The always-loaded layer's size",
-   "status": "inferred",
-   "summary": "Two persona documents, about 260 KB, imported into every session. The figure of roughly 65,000 tokens is arithmetic on file sizes.",
+   "status": "measured",
+   "summary": "Two persona documents, about 260 KB, imported into every session. Measured on 2026-11-27: the two documents are 91,639 tokens, and the whole always-loaded layer is 105,051. The earlier figure of roughly 65,000 tokens was arithmetic on file sizes and fell well short.",
    "why": "",
-   "evidence": [],
+   "evidence": [
+    {
+     "claim": "Tokens in the always-loaded layer",
+     "value": "105,051 for the layer; 91,639 for the two persona documents",
+     "kind": "measured",
+     "source": "Daimon experiment X0, 2026-11-27, by token counts of a session with and without the layer"
+    }
+   ],
    "assumptions": [],
    "falsify": "",
    "tests": [],
